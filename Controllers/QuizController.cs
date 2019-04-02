@@ -35,5 +35,15 @@ namespace Qwiz.Controllers
             
             return View(questionAnswer.ToList());
         }
+
+        public IActionResult Create()
+        {
+            return View();
+        }
+        
+        public ActionResult QuizMakerPartial()
+        {
+            return PartialView("_quizMakerPartial");
+        }
     }
 }

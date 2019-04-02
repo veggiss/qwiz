@@ -3,15 +3,24 @@
 <div class="text-center">
     <h1 class="display-4">Qwizes</h1>
 </div>
-
-@foreach (var item in Model)
-{
+<hr>
+<div class="d-flex flex-row">
     <div class="card" style="width: 18rem;">
-        <div class="card-body">
-            <h5 class="card-title">Topic: @item.Topic</h5>
-            <h6 class="card-title">Category: @item.Category</h6>
-            <p class="card-text">Description: @item.Description</p>
-            <a asp-action="Play" asp-route-id="@item.Id" class="btn btn-primary">Take quiz</a>
+        <div class="card-body" style="text-align: center;">
+            <h5 class="card-title">Quiz Maker</h5>
+            <a asp-action="Create" class="btn material-icons" style="font-size: 75px; color: #007bff;">add_circle</a>
         </div>
-    </div> 
-}
+    </div>
+    
+    @foreach (var item in Model)
+    {
+        <div class="card" style="width: 18rem;">
+            <div class="card-body">
+                <h5 class="card-title">Topic: @item.Topic</h5>
+                <h6 class="card-title">Category: @item.Category</h6>
+                <p class="card-text">Description: @item.Description</p>
+                <a asp-action="Play" asp-route-id="@item.Id" class="btn btn-primary">Take quiz</a>
+            </div>
+        </div> 
+    }
+</div>

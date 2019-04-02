@@ -1,0 +1,117 @@
+<div class="text-center">
+    <h1 class="display-4">Quiz Maker</h1>
+</div>
+
+<div style="width: 555px; display: block; margin-right: auto; margin-left: auto;">
+    <hr>
+    <div>
+        <div class="form-group">
+            <label>Title</label>
+            <input id="quizTitle" type="text" class="form-control">
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <input id="quizDescription" type="text" class="form-control">
+        </div>
+    </div>
+    <div id="quizField"></div>
+    <hr>
+    <button id="btnAddQuizForm" type="button" class="btn btn-primary" style="margin: 5px; width: 98%">+ Add question</button>
+    <button id="btnCreateQuiz" type="button" class="btn btn-success" style="margin: 5px; width: 98%">Create Quiz</button>
+</div>
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function() {
+            let qfLength = () => $(".quizForm").length + 1;
+            let getRoot = a => $(a).closest(".quizForm");
+
+            $("#btnAddQuizForm").click(function() {
+                $("#quizField").append(getQuizForm());
+            });
+
+            $("#btnCreateQuiz").click(function() {
+                submitQuizForm();
+            });
+
+            $(document).on("click", "button.removeQuizForm", function() {
+                getRoot(this).remove();
+                updateQuizForms();
+            });
+
+            $(document).on("click", "button.collapseQuizForm", function() {
+                getRoot(this).find(".collapse").slideToggle("slow", "swing");
+            });
+            
+            function updateQuizForms() {
+                $(".collapseQuizForm").each(function(i) {
+                    this.innerHTML = "Question " + (i + 1);
+                });
+            }
+            
+            function submitQuizForm() {
+                let quizForm = {
+                    title: $("#quizTitle").val(),
+                    description: $("#quizDescription").val(),
+                    questions: []
+            };
+                
+                $(".quizForm").each(function(i) {
+                    let question = {
+                        text: $(this).find(".questionText").text(),
+                        correctAnswer: $(this).find(".correctAnswer").children("option:selected").val(),
+                        alternatives: []
+                    };
+                    
+                    $(this).find(".alternative").each(function() {
+                        question.alternatives.push(this.value);
+                    });
+
+                    quizForm.questions.push(question);
+                });
+
+                console.log(quizForm);
+            }
+
+            function getQuizForm() {
+            return `
+                <div class="quizForm"><hr>
+                    <button class="btn btn-light collapseQuizForm" style="width:100%">Question ${qfLength()}</button>
+                    <div class="collapse">
+                        <button type="button" class="close removeQuizForm" aria-label="Close">
+                            <span aria-hidden="true" title="Remove Question" style="color:#dc3545;">&times;</span>
+                        </button>
+                        <label>Question Text</label>
+                        <div class="border rounded questionText" contenteditable="true" style="margin-bottom: 15px; padding: 5px; font-size: 30px; width: 100%; text-align: center;"></div>
+                        
+                        <div class="form-group">
+                            <label>Correct Answer</label>
+                            <select class="form-control correctAnswer">
+                                <option>A</option>
+                                <option>B</option>
+                                <option>C</option>
+                                <option>D</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <input type="text" class="form-control text-center alternative" placeholder="Alternative A">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <input type="text" class="form-control text-center alternative" placeholder="Alternative B">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <input type="text" class="form-control text-center alternative" placeholder="Alternative C">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <input type="text" class="form-control text-center alternative" placeholder="Alternative D">
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+        });
+    </script>
+}

@@ -2,7 +2,7 @@
 
 <div id="app" style="margin: 0 auto; width:50%">
     <div class="text-center">
-        <h1 class="display-6">{{quiz[page].question}}</h1>
+        <h1 class="display-4" style="font-size: 40px; width: 100%; text-align: center;">{{quiz[page].question}}</h1>
     </div>
     
     <div class="progress">
@@ -16,15 +16,12 @@
     <button v-on:click="next" type="button" class="btn btn-dark" style="margin: 5px; width: 98%">Next</button>
     
     <div class="text-center">
-        <h1 class="display-5">{{resultMsg}}</h1>
+        <h1>{{resultMsg}}</h1>
     </div>
 </div>
 
 @section Scripts
 {
-    <script src="https://unpkg.com/axios/dist/axios.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-
     <script>
         $(document).ready(() => {
             let progressBar = $("#progressBar");
