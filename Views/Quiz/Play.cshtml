@@ -9,10 +9,10 @@
         <div id="progressBar" class="progress-bar" role="progressbar"></div>
     </div>
     
-    <button id="btn_a" v-on:click="answer('a')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].answerA}}</button>
-    <button id="btn_b" v-on:click="answer('b')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].answerB}}</button>
-    <button id="btn_c" v-on:click="answer('c')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].answerC}}</button>
-    <button id="btn_d" v-on:click="answer('d')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].answerD}}</button>
+    <button id="btn_A" v-on:click="answer('A')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].answerA}}</button>
+    <button id="btn_B" v-on:click="answer('B')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].answerB}}</button>
+    <button id="btn_C" v-on:click="answer('C')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].answerC}}</button>
+    <button id="btn_D" v-on:click="answer('D')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].answerD}}</button>
     <button v-on:click="next" type="button" class="btn btn-dark" style="margin: 5px; width: 98%">Next</button>
     
     <div class="text-center">
@@ -41,7 +41,7 @@
                         if (!self.guessed) {
                             axios.get('/api/answer?id=' + this.quiz[this.page].id).then(function(response) {
                                 $("#btn_" + response.data).css("background-color", "#28a745");
-
+                                
                                 if (response.data !== alt) $("#btn_" + alt).css("background-color", "#dc3545");
                                 else self.correctAnswers++;
 
@@ -51,7 +51,7 @@
                     },
                     next: function() {
                         if (this.page < this.quiz.length - 1) {
-                            ['#btn_a', '#btn_b', '#btn_c', '#btn_d'].forEach(e => $(e).css("background-color",
+                            ['#btn_A', '#btn_B', '#btn_C', '#btn_D'].forEach(e => $(e).css("background-color",
                                 "transparent"));
                             this.page++;
                             this.guessed = false;

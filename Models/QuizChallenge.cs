@@ -6,10 +6,10 @@ namespace Qwiz.Models
     {
         public QuizChallenge() {}
 
-        public QuizChallenge(ApplicationUser user, List<QuestionAnswer> list, string category, string topic, string description)
+        public QuizChallenge(ApplicationUser user, List<QuestionAnswer> questions, string category, string topic, string description)
         {
             Owner = user;
-            QaList = list;
+            Questions = questions;
             Category = category;
             Topic = topic;
             Description = description;
@@ -17,7 +17,7 @@ namespace Qwiz.Models
         
         public int Id { get; set; }
         public ApplicationUser Owner { get; set; }
-        public List<QuestionAnswer> QaList { get; set; }
+        public List<QuestionAnswer> Questions { get; set; }
         public string Category { get; set; }
         public string Topic { get; set; }
         public string Description { get; set; }

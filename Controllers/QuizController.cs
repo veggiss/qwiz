@@ -25,11 +25,11 @@ namespace Qwiz.Controllers
         public async Task<IActionResult> Play(int? id)
         {
             var quizChallenge = await _db.QuizChallenges
-                .Include(c => c.QaList)
+                .Include(c => c.Questions)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (quizChallenge == null) return NotFound();
             
-            var questionAnswer = quizChallenge.QaList;
+            var questionAnswer = quizChallenge.Questions;
             if (questionAnswer == null) return NotFound();
             questionAnswer.ForEach(item => item.CorrectAnswer = "");
             

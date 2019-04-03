@@ -1,5 +1,7 @@
+using System;
 using Microsoft.AspNetCore.Mvc;
 using Qwiz.Data;
+using Qwiz.Models;
 
 namespace Qwiz.Controllers
 {
@@ -23,6 +25,17 @@ namespace Qwiz.Controllers
             if (question == null) return NotFound();
             
             return Ok(question.CorrectAnswer);
+        }
+
+        [HttpPost("create")]
+        public IActionResult Post(QuizChallenge quizChallenge)
+        {
+            if (quizChallenge.Id != 0) return BadRequest();
+
+            _db.Add(quizChallenge);
+            _db.SaveChanges();
+
+            return Ok(quizChallenge);
         }
     }
 }
