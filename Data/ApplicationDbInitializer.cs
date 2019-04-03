@@ -17,10 +17,10 @@ namespace Qwiz.Data
             // Save user and role changes to the database
             db.SaveChanges();
 
-            var question1 = new QuestionAnswer("What is 5 + 5?", "2", "10", "5", "9", "b");
-            var question2 = new QuestionAnswer("What is 1 + 1?", "2", "10", "5", "9", "a");
-            var question3 = new QuestionAnswer("What is 4 + 1?", "2", "10", "5", "9", "c");
-            var question4 = new QuestionAnswer("What is 4 + 5?", "2", "10", "5", "9", "d");
+            var question1 = new QuestionAnswer("What is 5 + 5?", "2", "10", "5", "9", "B");
+            var question2 = new QuestionAnswer("What is 1 + 1?", "2", "10", "5", "9", "A");
+            var question3 = new QuestionAnswer("What is 4 + 1?", "2", "10", "5", "9", "C");
+            var question4 = new QuestionAnswer("What is 4 + 5?", "2", "10", "5", "9", "D");
             
             db.QuestionAnswers.AddRangeAsync(question1, question2, question3, question4);
 
