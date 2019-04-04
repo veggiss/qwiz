@@ -1,5 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Qwiz.Data;
 using Qwiz.Models;
 
@@ -31,11 +32,12 @@ namespace Qwiz.Controllers
         public IActionResult Post(QuizChallenge quizChallenge)
         {
             if (quizChallenge.Id != 0) return BadRequest();
-
+            if (!ModelState.IsValid) return BadRequest();
+            
             _db.Add(quizChallenge);
             _db.SaveChanges();
 
-            return Ok(quizChallenge);
+            return RedirectToAction("Index", "Quiz", new { area = "" });
         }
     }
 }

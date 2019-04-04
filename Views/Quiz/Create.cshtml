@@ -10,6 +10,10 @@
             <input id="quizTitle" type="text" class="form-control" required>
         </div>
         <div class="form-group">
+            <label>Category</label>
+            <input id="quizCategory" type="text" class="form-control" required>
+        </div>
+        <div class="form-group">
             <label>Description</label>
             <input id="quizDescription" type="text" class="form-control" required>
         </div>
@@ -64,6 +68,7 @@
                 if (qfLength() > 0 && $("#quizForm")[0].checkValidity()) {
                     let quizForm = {
                         topic: $("#quizTitle").val(),
+                        category: $("#quizCategory").val(),
                         description: $("#quizDescription").val(),
                         questions: []
                     };
