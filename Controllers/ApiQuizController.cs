@@ -22,14 +22,14 @@ namespace Qwiz.Controllers
         [HttpGet("answer")]
         public IActionResult Get(int id)
         {
-            var question = _db.QuestionAnswers.Find(id);
+            var question = _db.Questions.Find(id);
             if (question == null) return NotFound();
             
             return Ok(question.CorrectAnswer);
         }
 
         [HttpPost("create")]
-        public IActionResult Post(QuizChallenge quizChallenge)
+        public IActionResult Post(QuizModel quizChallenge)
         {
             if (quizChallenge.Id != 0) return BadRequest();
             if (!ModelState.IsValid) return BadRequest();

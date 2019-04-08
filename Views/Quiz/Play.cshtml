@@ -1,4 +1,4 @@
-@model IEnumerable<QuestionAnswer>
+@model List<QuestionModel>
 
 <div id="app" style="margin: 0 auto; width:50%">
     <div class="text-center">
@@ -24,6 +24,7 @@
 {
     <script>
         $(document).ready(() => {
+            console.log(@Html.Raw(Json.Serialize(Model)));
             let progressBar = $("#progressBar");
 
             let app = new Vue({

@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 using Qwiz.Models;
+using Qwiz.Models.QuestionModels;
 
 namespace Qwiz.Data
 {
-    public class ApplicationDbInitializer
+    public static class ApplicationDbInitializer
     {
         public static void Initialize(ApplicationDbContext db, UserManager<ApplicationUser> um, RoleManager<IdentityRole> rm)
         {
@@ -13,24 +14,23 @@ namespace Qwiz.Data
             
             var user = new ApplicationUser { UserName = "user@uia.no", Email = "user@uia.no"};
             um.CreateAsync(user, "Password1.").Wait();
-
-            // Save user and role changes to the database
             db.SaveChanges();
 
-            var question1 = new QuestionAnswer("What is 5 + 5?", "2", "10", "5", "9", "B");
-            var question2 = new QuestionAnswer("What is 1 + 1?", "2", "10", "5", "9", "A");
-            var question3 = new QuestionAnswer("What is 4 + 1?", "2", "10", "5", "9", "C");
-            var question4 = new QuestionAnswer("What is 4 + 5?", "2", "10", "5", "9", "D");
-            
-            db.QuestionAnswers.AddRangeAsync(question1, question2, question3, question4);
+            var question1 = new MultipleChoiceSingle("What color is grass?", "green", "yellow", "brown", "white", "A");
+            var question2 = new MultipleChoiceMultiple("What color is grass?", "green", "green", "brown", "white", "A,B");
+            var question3 = new TrueFalse("Is the grass green?", "true");
 
+            db.MultipleChoiceSingles.Add(question1);
+            db.MultipleChoiceMultiples.Add(question2);
+            db.TrueFalses.Add(question3);
+            
+            db.Questions.AddRangeAsync(question1, question2, question3);
             db.SaveChanges();
-
-            var questionList = new List<QuestionAnswer>() {question1, question2, question3, question4};
-            var quizChallenge = new QuizChallenge(user, questionList, "Math", "Addition", "Quiz about addition");
             
-            db.QuizChallenges.AddRangeAsync(quizChallenge);
+            var questions = new List<QuestionModel>() {question1, question2, question3};
+            var quiz = new QuizModel(user, questions, "Math", "Addition", "Quiz about addition");
 
+            db.Quizzes.AddRangeAsync(quiz);
             db.SaveChanges();
         }
     }

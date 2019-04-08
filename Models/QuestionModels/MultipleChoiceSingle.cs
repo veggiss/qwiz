@@ -1,11 +1,11 @@
-namespace Qwiz.Models
+namespace Qwiz.Models.QuestionModels
 {
-    public class QuestionAnswer
+    public class MultipleChoiceSingle : QuestionModel
     {
-        public QuestionAnswer() {}
-
-        public QuestionAnswer(string question, string a, string b, string c, string d, string answer)
+        public MultipleChoiceSingle() {}
+        public MultipleChoiceSingle(string question, string a, string b, string c, string d, string answer)
         {
+            Type = "multiple_choice_single";
             Question = question;
             AnswerA = a;
             AnswerB = b;
@@ -14,12 +14,9 @@ namespace Qwiz.Models
             CorrectAnswer = answer;
         }
         
-        public int Id { get; set; }
-        public string Question { get; set; }
         public string AnswerA { get; set; }
         public string AnswerB { get; set; }
         public string AnswerC { get; set; }
         public string AnswerD { get; set; }
-        public string CorrectAnswer { get; set; }
     }
 }

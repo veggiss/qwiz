@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Qwiz.Models;
+using Qwiz.Models.QuestionModels;
 
 namespace Qwiz.Data
 {
@@ -13,7 +14,10 @@ namespace Qwiz.Data
             : base(options)
         {}
         
-        public DbSet<QuestionAnswer> QuestionAnswers { get; set; }
-        public DbSet<QuizChallenge> QuizChallenges { get; set; }
+        public DbSet<QuizModel> Quizzes { get; set; }
+        public DbSet<QuestionModel> Questions { get; set; }
+        public DbSet<MultipleChoiceSingle> MultipleChoiceSingles { get; set; }
+        public DbSet<MultipleChoiceMultiple> MultipleChoiceMultiples { get; set; }
+        public DbSet<TrueFalse> TrueFalses { get; set; }
     }
 }
