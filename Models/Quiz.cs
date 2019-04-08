@@ -2,11 +2,11 @@ using System.Collections.Generic;
 
 namespace Qwiz.Models
 {
-    public class QuizModel
+    public class Quiz
     {
-        public QuizModel() {}
+        public Quiz() {}
 
-        public QuizModel(ApplicationUser user, List<QuestionModel> questions, string category, string topic, string description)
+        public Quiz(ApplicationUser user, List<Question> questions, string category, string topic, string description)
         {
             Owner = user;
             Questions = questions;
@@ -17,7 +17,7 @@ namespace Qwiz.Models
         
         public int Id { get; set; }
         private ApplicationUser Owner { get; set; }
-        public List<QuestionModel> Questions { get; set; }
+        public List<Question> Questions { get; set; }
         public string Category { get; set; }
         public string Topic { get; set; }
         public string Description { get; set; }

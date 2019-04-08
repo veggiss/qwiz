@@ -29,12 +29,12 @@ namespace Qwiz.Controllers
         }
 
         [HttpPost("create")]
-        public IActionResult Post(QuizModel quizChallenge)
+        public IActionResult Post(Quiz quiz)
         {
-            if (quizChallenge.Id != 0) return BadRequest();
+            if (quiz.Id != 0) return BadRequest();
             if (!ModelState.IsValid) return BadRequest();
             
-            _db.Add(quizChallenge);
+            _db.Add(quiz);
             _db.SaveChanges();
 
             return RedirectToAction("Index", "Quiz", new { area = "" });

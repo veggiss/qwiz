@@ -1,12 +1,14 @@
+using System;
+
 namespace Qwiz.Models.QuestionModels
 {
-    public class TrueFalse : QuestionModel
+    public class TrueFalse : Question
     {
         public TrueFalse() {}
-        public TrueFalse(string question, string answer)
+        public TrueFalse(string text, string answer)
         {
-            Type = "true_false";
-            Question = question;
+            QuestionType = "true_false";
+            QuestionText = text;
             CorrectAnswer = answer;
         }
     }

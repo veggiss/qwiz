@@ -14,8 +14,8 @@ namespace Qwiz.Data
             : base(options)
         {}
         
-        public DbSet<QuizModel> Quizzes { get; set; }
-        public DbSet<QuestionModel> Questions { get; set; }
+        public DbSet<Quiz> Quizzes { get; set; }
+        public DbSet<Question> Questions { get; set; }
         public DbSet<MultipleChoiceSingle> MultipleChoiceSingles { get; set; }
         public DbSet<MultipleChoiceMultiple> MultipleChoiceMultiples { get; set; }
         public DbSet<TrueFalse> TrueFalses { get; set; }

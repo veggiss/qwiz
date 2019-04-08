@@ -1,18 +1,18 @@
 namespace Qwiz.Models.QuestionModels
 {
-    public class MultipleChoiceMultiple : QuestionModel
+    public class MultipleChoiceMultiple : Question
     {
         public MultipleChoiceMultiple() {}
 
-        public MultipleChoiceMultiple(string question, string a, string b, string c, string d, string answer)
+        public MultipleChoiceMultiple(string text, string a, string b, string c, string d, string answer)
         {
-            Type = "multiple_choice_multiple";
-            Question = question;
+            QuestionType = "multiple_choice_multiple";
+            QuestionText = text;
+            CorrectAnswer = answer;
             AnswerA = a;
             AnswerB = b;
             AnswerC = c;
             AnswerD = d;
-            CorrectAnswer = answer;
         }
         
         public string AnswerA { get; set; }

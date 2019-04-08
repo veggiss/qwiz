@@ -27,8 +27,8 @@ namespace Qwiz.Data
             db.Questions.AddRangeAsync(question1, question2, question3);
             db.SaveChanges();
             
-            var questions = new List<QuestionModel>() {question1, question2, question3};
-            var quiz = new QuizModel(user, questions, "Math", "Addition", "Quiz about addition");
+            var questions = new List<Question>() {question1, question2, question3};
+            var quiz = new Quiz(user, questions, "Math", "Addition", "Quiz about addition");
 
             db.Quizzes.AddRangeAsync(quiz);
             db.SaveChanges();
