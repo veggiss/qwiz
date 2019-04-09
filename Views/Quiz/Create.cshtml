@@ -48,6 +48,40 @@
                 $(".alert").hide();
             });
 
+            $(document).on("change", ".questionType", function(e) {
+                let ans = getRoot(this).find(".correctAnswer");
+                let alt = getRoot(this).find(".alternatives");
+                
+                switch(e.currentTarget.selectedIndex) {
+                    case 0: 
+                    {
+                        alt.show();
+                        ans.empty();
+
+                        ["A", "B", "C", "D"].forEach(e => {
+                            ans.append($("<option></option>").text(e));
+                        });
+                        
+                        break;
+                    }
+                    case 1:
+                    {
+                        alt.hide();
+                        ans.empty();
+
+                        [{text: "True", value: true }, { text: "False", value: false}].forEach(e => {
+                            ans.append($("<option></option>").attr("value", e.value).text(e.text));
+                        });
+                        
+                        break;
+                    }
+                    default:
+                    {
+                        console.error("Not a valid question type!");
+                    }
+                }
+            });
+
             $(document).on("click", "button.removeQuizForm", function() {
                 getRoot(this).remove();
                 updateQuizForms();
@@ -56,6 +90,26 @@
             $(document).on("click", "button.collapseQuizForm", function() {
                 getRoot(this).find(".collapse").slideToggle("slow", "swing");
             });
+            
+            function getQuestionType(i) {
+                let alt = $(this).find(".alternative");
+                let types = [
+                    {
+                        correctAnswer: $(this).find(".correctAnswer").children("option:selected").val(),
+                        questionText: $(this).find(".questionText")[0].value,
+                        answerA: alt[0].value,
+                        answerB: alt[1].value,
+                        answerC: alt[2].value,
+                        answerD: alt[3].value
+                    },
+                    {
+                        correctAnswer: $(this).find(".correctAnswer").children("option:selected").val(),
+                        questionText: $(this).find(".questionText")[0].value
+                    }
+                ];
+
+                return types[i];
+            }
             
             function updateQuizForms() {
                 $(".collapseQuizForm").each(function(i) {
@@ -73,15 +127,7 @@
                     };
 
                     $(".quizForm").each(function(i) {
-                        let alternatives = $(this).find(".alternative");
-                        let question = {
-                            questionText: $(this).find(".questionText")[0].value,
-                            answerA: alternatives[0].value,
-                            answerB: alternatives[1].value,
-                            answerC: alternatives[2].value,
-                            answerD: alternatives[3].value,
-                            correctAnswer: $(this).find(".correctAnswer").children("option:selected").val()
-                        };
+                        let question = getQuestionType();
 
                         quizForm.questions.push(question);
 
@@ -125,7 +171,7 @@
                             </select>
                         </div>
                         
-                        <div class="form-row">
+                        <div class="form-row alternatives">
                             <div class="form-group col-md-6">
                                 <input type="text" class="form-control text-center alternative" placeholder="Alternative A" required>
                             </div>
