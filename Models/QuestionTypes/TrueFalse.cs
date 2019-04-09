@@ -1,6 +1,4 @@
-using System;
-
-namespace Qwiz.Models.QuestionModels
+namespace Qwiz.Models.QuestionTypes
 {
     public class TrueFalse : Question
     {

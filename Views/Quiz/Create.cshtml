@@ -35,7 +35,6 @@
         $(document).ready(function() {
             let qfLength = () => $(".quizForm").length + 1;
             let getRoot = a => $(a).closest(".quizForm");
-            let isEmpty = s => !s.length > 0;
 
             $("#btnAddQuizForm").click(function() {
                 $("#quizField").append(getQuizForm());
@@ -76,7 +75,7 @@
                     $(".quizForm").each(function(i) {
                         let alternatives = $(this).find(".alternative");
                         let question = {
-                            question: $(this).find(".questionText")[0].value,
+                            questionText: $(this).find(".questionText")[0].value,
                             answerA: alternatives[0].value,
                             answerB: alternatives[1].value,
                             answerC: alternatives[2].value,
@@ -107,6 +106,14 @@
                         </button>
                         <label>Question Text</label>
                         <textarea class="border rounded bg-white questionText" required style="margin-bottom: 15px; padding: 5px; font-size: 30px; width: 100%; text-align: center;"></textarea>
+                        
+                        <div class="form-group">
+                            <label>Question Type</label>
+                            <select class="form-control questionType">
+                                <option>Multiple Choice</option>
+                                <option>True or False</option>
+                            </select>
+                        </div>
                         
                         <div class="form-group">
                             <label>Correct Answer</label>
