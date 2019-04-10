@@ -1,7 +1,7 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 using Qwiz.Models;
-using Qwiz.Models.QuestionTypes;
 
 namespace Qwiz.Data
 {
@@ -15,12 +15,9 @@ namespace Qwiz.Data
             var user = new ApplicationUser { UserName = "user@uia.no", Email = "user@uia.no"};
             um.CreateAsync(user, "Password1.").Wait();
             db.SaveChanges();
-
-            var question1 = new MultipleChoice("What color is grass?", "green", "yellow", "brown", "white", "A");
-            var question2 = new TrueFalse("Is the grass green?", "true");
-
-            db.MultipleChoices.Add(question1);
-            db.TrueFalses.Add(question2);
+            
+            var question1 = new Question("multiple_choice", "What color is grass?", "green|yellow|white|brown", "0");
+            var question2 = new Question("true_false", "Is grass green?", null, "true");
             
             db.Questions.AddRangeAsync(question1, question2);
             db.SaveChanges();

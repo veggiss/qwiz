@@ -2,17 +2,26 @@
 
 <div id="app" style="margin: 0 auto; width:50%">
     <div class="text-center">
-        <h1 class="display-4" style="font-size: 40px; width: 100%; text-align: center;">{{quiz[page].question}}</h1>
+        <h1 class="display-4" style="font-size: 40px; width: 100%; text-align: center;">{{quiz[page].questionText}}</h1>
     </div>
     
     <div class="progress">
         <div id="progressBar" class="progress-bar" role="progressbar"></div>
     </div>
     
-    <button id="btn_A" v-on:click="answer('A')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].answerA}}</button>
-    <button id="btn_B" v-on:click="answer('B')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].answerB}}</button>
-    <button id="btn_C" v-on:click="answer('C')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].answerC}}</button>
-    <button id="btn_D" v-on:click="answer('D')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].answerD}}</button>
+    <div>
+        <div class="multiple_choice">
+            <button id="btn_A" v-on:click="answer('A')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].alternatives[0]}}</button>
+            <button id="btn_B" v-on:click="answer('B')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].alternatives[1]}}</button>
+            <button id="btn_C" v-on:click="answer('C')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].alternatives[2]}}</button>
+            <button id="btn_D" v-on:click="answer('D')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].alternatives[3]}}</button>
+        </div>
+        
+        <div class="true_false" style="display: none">
+            <button id="btn_true" v-on:click="answer('true')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">True</button>
+            <button id="btn_false" v-on:click="answer('false')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">False</button>
+        </div>
+    </div>
     <button v-on:click="next" type="button" class="btn btn-dark" style="margin: 5px; width: 98%">Next</button>
     
     <div class="text-center">
@@ -24,13 +33,20 @@
 {
     <script>
         $(document).ready(() => {
-            console.log(@Html.Raw(Json.Serialize(Model)));
             let progressBar = $("#progressBar");
-
+            let quizForm = @Json.Serialize(Model);
+            quizForm.forEach(e => {
+                if (e.questionType === "multiple_choice") {
+                    e.alternatives = e.alternatives.split('|');
+                } else {
+                    e.alternatives = ['', '', '', ''];
+                }
+            });
+            
             let app = new Vue({
                 el: '#app',
                 data: {
-                    quiz: @Html.Raw(Json.Serialize(Model)),
+                    quiz: quizForm,
                     guessed: false,
                     page: 0,
                     correctAnswers: 0,
@@ -41,9 +57,10 @@
                         let self = this;
                         if (!self.guessed) {
                             axios.get('/api/answer?id=' + this.quiz[this.page].id).then(function(response) {
+                                console.log(response.data.toString());
                                 $("#btn_" + response.data).css("background-color", "#28a745");
                                 
-                                if (response.data !== alt) $("#btn_" + alt).css("background-color", "#dc3545");
+                                if (response.data.toString() !== alt) $("#btn_" + alt).css("background-color", "#dc3545");
                                 else self.correctAnswers++;
 
                                 self.guessed = true;
@@ -52,10 +69,17 @@
                     },
                     next: function() {
                         if (this.page < this.quiz.length - 1) {
-                            ['#btn_A', '#btn_B', '#btn_C', '#btn_D'].forEach(e => $(e).css("background-color",
-                                "transparent"));
+                            ['#btn_A', '#btn_B', '#btn_C', '#btn_D', '#btn_true', '#btn_false'].forEach(e => $(e).css("background-color", "transparent"));
                             this.page++;
                             this.guessed = false;
+                            
+                            if (quizForm[this.page].questionType === "multiple_choice") {
+                                $(".multiple_choice").show();
+                                $(".true_false").hide();
+                            } else {
+                                $(".multiple_choice").hide();
+                                $(".true_false").show();
+                            }
                         } else {
                             this.resultMsg = `${this.correctAnswers} of ${this.quiz.length} questions correct!`;
                         }

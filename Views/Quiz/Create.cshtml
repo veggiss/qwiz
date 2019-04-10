@@ -51,28 +51,36 @@
             $(document).on("change", ".questionType", function(e) {
                 let ans = getRoot(this).find(".correctAnswer");
                 let alt = getRoot(this).find(".alternatives");
-                
-                switch(e.currentTarget.selectedIndex) {
-                    case 0: 
+
+                switch (e.currentTarget.selectedIndex) {
+                    case 0:
                     {
                         alt.show();
                         ans.empty();
-
+                        
+                        alt.find("input").each(function() {
+                            $(this).attr("required", true);
+                        });
+                
                         ["A", "B", "C", "D"].forEach(e => {
                             ans.append($("<option></option>").text(e));
                         });
-                        
+                
                         break;
                     }
                     case 1:
                     {
                         alt.hide();
                         ans.empty();
-
-                        [{text: "True", value: true }, { text: "False", value: false}].forEach(e => {
+                        
+                        alt.find("input").each(function() {
+                            $(this).attr("required", false);
+                        });
+                
+                        [{ text: "True", value: true }, { text: "False", value: false }].forEach(e => {
                             ans.append($("<option></option>").attr("value", e.value).text(e.text));
                         });
-                        
+                
                         break;
                     }
                     default:
@@ -83,59 +91,55 @@
             });
 
             $(document).on("click", "button.removeQuizForm", function() {
-                getRoot(this).remove();
-                updateQuizForms();
-            });
+                    getRoot(this).remove();
+                    updateQuizForms();
+                });
 
             $(document).on("click", "button.collapseQuizForm", function() {
-                getRoot(this).find(".collapse").slideToggle("slow", "swing");
-            });
-            
-            function getQuestionType(i) {
-                let alt = $(this).find(".alternative");
-                let types = [
-                    {
-                        correctAnswer: $(this).find(".correctAnswer").children("option:selected").val(),
-                        questionText: $(this).find(".questionText")[0].value,
-                        answerA: alt[0].value,
-                        answerB: alt[1].value,
-                        answerC: alt[2].value,
-                        answerD: alt[3].value
-                    },
-                    {
-                        correctAnswer: $(this).find(".correctAnswer").children("option:selected").val(),
-                        questionText: $(this).find(".questionText")[0].value
-                    }
-                ];
+                    getRoot(this).find(".collapse").slideToggle("slow", "swing");
+                });
 
-                return types[i];
-            }
-            
             function updateQuizForms() {
                 $(".collapseQuizForm").each(function(i) {
                     this.innerHTML = "Question " + (i + 1);
                 });
             }
             
+            function getType(i) {
+                let questionTypes = ["multiple_choice", "true_false"];
+                return questionTypes[i];
+            }
+
             function submitQuizForm() {
-                if (qfLength() > 0 && $("#quizForm")[0].checkValidity()) {
+                if (qfLength() > 1 && $("#quizForm")[0].checkValidity()) {
                     let quizForm = {
                         topic: $("#quizTitle").val(),
                         category: $("#quizCategory").val(),
                         description: $("#quizDescription").val(),
                         questions: []
                     };
-
+                    
+                    
+                    
                     $(".quizForm").each(function(i) {
-                        let question = getQuestionType();
+                        let type = getType([$(this).find(".questionType")[0].selectedIndex]);
+                        let a = $(this).find(".alternative");
+                        let alt = type === "multiple_choice" ? `${a[0].value}|${a[1].value}|${a[2].value}|${a[3].value}` : null;
+                        
+                        let question = {
+                            correctAnswer: $(this).find(".correctAnswer").children("option:selected").val(),
+                            questionText: $(this).find(".questionText")[0].value,
+                            questionType: type,
+                            alternatives: alt
+                        };
 
                         quizForm.questions.push(question);
+                    });
+                    
+                    console.log(quizForm);
 
-                        console.log($(this).find(".questionText")[0].value);
-                        
-                        axios.post('/api/create', quizForm).then(function(response) {
-                            console.log(response);
-                        });
+                    axios.post('/api/create', quizForm).then(function(response) {
+                        console.log(response);
                     });
                 } else {
                     $(".alert").show().delay(2000).fadeOut();
@@ -143,7 +147,7 @@
             }
 
             function getQuizForm() {
-            return `
+                return `
                 <div class="quizForm"><hr>
                     <button type="button" class="btn btn-light collapseQuizForm" style="width:100%">Question ${qfLength()}</button>
                     <div class="collapse">
