@@ -12,7 +12,7 @@ namespace Qwiz.Data
             db.Database.EnsureDeleted();
             db.Database.EnsureCreated();
             
-            var user = new ApplicationUser { UserName = "user@uia.no", Email = "user@uia.no"};
+            /*var user = new ApplicationUser { UserName = "user@uia.no", Email = "user@uia.no"};
             um.CreateAsync(user, "Password1.").Wait();
             db.SaveChanges();
             
@@ -26,7 +26,7 @@ namespace Qwiz.Data
             var quiz = new Quiz(user, questions, "Category", "Topic", "Description");
 
             db.Quizzes.AddRangeAsync(quiz);
-            db.SaveChanges();
+            db.SaveChanges();*/
         }
     }
 }

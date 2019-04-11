@@ -8,7 +8,7 @@
         <div class="row">
             <div style="width: 35%;">
                 <div class="form-group">
-                    <input type="file"/>
+                    <input id="quizImage" type="file"/>
                 </div>
             </div>
             <div style="width: 65%;">
@@ -118,38 +118,50 @@
                 let questionTypes = ["multiple_choice", "true_false"];
                 return questionTypes[i];
             }
+            
+            function getFileBinary() {
+                
+            }
 
             function submitQuizForm() {
                 if (qfLength() > 1 && $("#quizForm")[0].checkValidity()) {
-                    let quizForm = {
-                        topic: $("#quizTitle").val(),
-                        category: $("#quizCategory").val(),
-                        description: $("#quizDescription").val(),
-                        questions: []
-                    };
-                    
-                    
-                    
-                    $(".quizForm").each(function(i) {
-                        let type = getType([$(this).find(".questionType")[0].selectedIndex]);
-                        let a = $(this).find(".alternative");
-                        let alt = type === "multiple_choice" ? `${a[0].value}|${a[1].value}|${a[2].value}|${a[3].value}` : null;
+                    var r = new FileReader();
+                    r.onloadend = function(e) {
+                        var arr = Array.from(new Uint8Array(e.target.result));
                         
-                        let question = {
-                            correctAnswer: $(this).find(".correctAnswer").children("option:selected").val(),
-                            questionText: $(this).find(".questionText")[0].value,
-                            questionType: type,
-                            alternatives: alt
-                        };
-
-                        quizForm.questions.push(question);
-                    });
+                        let quizForm = {
+                            topic: $("#quizTitle").val(),
+                            category: $("#quizCategory").val(),
+                            description: $("#quizDescription").val(),
+                            image: Array.from(new Uint8Array(e.target.result)),
+                            questions: []
+                        };    
                     
-                    console.log(quizForm);
+                        $(".quizForm").each(function(i) {
+                            let type = getType([$(this).find(".questionType")[0].selectedIndex]);
+                            let a = $(this).find(".alternative");
+                            let alt = type === "multiple_choice" ? `${a[0].value}|${a[1].value}|${a[2].value}|${a[3].value}` : null;
+                        
+                            let question = {
+                                correctAnswer: $(this).find(".correctAnswer").children("option:selected").val(),
+                                questionText: $(this).find(".questionText")[0].value,
+                                questionType: type,
+                                alternatives: alt
+                            };
 
-                    axios.post('/api/create', quizForm).then(function(response) {
-                        console.log(response);
-                    });
+                            quizForm.questions.push(question);
+                        });
+                    
+                        console.log(quizForm);
+
+                        axios.post('/api/create', quizForm).then(function(response) {
+                            console.log(response);
+                        });
+                    };
+
+                    let file = document.getElementById("quizImage").files[0];
+                    console.log(file);
+                    r.readAsArrayBuffer(file);
                 } else {
                     $(".alert").show().delay(2000).fadeOut();
                 }
