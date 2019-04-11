@@ -4,18 +4,25 @@
 
 <form asp-action="Create" id="quizForm" style="width: 555px; display: block; margin-right: auto; margin-left: auto;">
     <hr>
-    <div>
-        <div class="form-group">
-            <label>Title</label>
-            <input id="quizTitle" type="text" class="form-control" required>
-        </div>
-        <div class="form-group">
-            <label>Category</label>
-            <input id="quizCategory" type="text" class="form-control" required>
-        </div>
-        <div class="form-group">
-            <label>Description</label>
-            <input id="quizDescription" type="text" class="form-control" required>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                Imagestuff
+            </div>
+            <div class="col-6">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input id="quizTitle" type="text" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <input id="quizCategory" type="text" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input id="quizDescription" type="text" class="form-control" required>
+                </div>
+            </div>
         </div>
     </div>
     <div id="quizField"></div>
