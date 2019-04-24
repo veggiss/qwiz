@@ -40,10 +40,5 @@ namespace Qwiz.Controllers
         {
             return View();
         }
-        
-        public ActionResult QuizMakerPartial()
-        {
-            return PartialView("_quizMakerPartial");
-        }
     }
 }

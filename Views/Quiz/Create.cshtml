@@ -2,13 +2,16 @@
     <h1 class="display-4">Quiz Maker</h1>
 </div>
 
+<div id="testings"></div>
+
 <form asp-action="Create" id="quizForm" style="width: 555px; display: block; margin-right: auto; margin-left: auto;">
     <hr>
     <div class="container">
         <div class="row">
             <div style="width: 35%;">
                 <div class="form-group">
-                    <input id="quizImage" type="file"/>
+                    <input id="quizImg" type="file"/>
+                    <img width="150" id="quizImgPrev"/>
                 </div>
             </div>
             <div style="width: 65%;">
@@ -42,6 +45,7 @@
 {
     <script>
         $(document).ready(function() {
+            let getType = i => ["multiple_choice", "true_false"][i];
             let qfLength = () => $(".quizForm").length + 1;
             let getRoot = a => $(a).closest(".quizForm");
 
@@ -62,106 +66,119 @@
                 let alt = getRoot(this).find(".alternatives");
 
                 switch (e.currentTarget.selectedIndex) {
-                    case 0:
-                    {
+                    case 0: {
                         alt.show();
                         ans.empty();
-                        
+    
                         alt.find("input").each(function() {
                             $(this).attr("required", true);
                         });
-                
+    
                         ["A", "B", "C", "D"].forEach(e => {
                             ans.append($("<option></option>").text(e));
                         });
-                
+    
                         break;
-                    }
-                    case 1:
-                    {
+                    } case 1: {
                         alt.hide();
                         ans.empty();
-                        
+    
                         alt.find("input").each(function() {
                             $(this).attr("required", false);
                         });
-                
+    
                         [{ text: "True", value: true }, { text: "False", value: false }].forEach(e => {
                             ans.append($("<option></option>").attr("value", e.value).text(e.text));
                         });
-                
+    
                         break;
-                    }
-                    default:
-                    {
+                    } default: {
                         console.error("Not a valid question type!");
                     }
                 }
             });
 
             $(document).on("click", "button.removeQuizForm", function() {
-                    getRoot(this).remove();
-                    updateQuizForms();
-                });
+                getRoot(this).remove();
+                updateQuizForms();
+            });
 
             $(document).on("click", "button.collapseQuizForm", function() {
-                    getRoot(this).find(".collapse").slideToggle("slow", "swing");
+                getRoot(this).find(".collapse").slideToggle("slow", "swing");
+            });
+            
+            $(document).on("change", "input.questionImg", async function() {
+                let path = await uploadImage(this.files[0]).catch(e => console.log(e));
+                let questionImgPrev = getRoot(this).find(".questionImgPrev");
+                questionImgPrev.attr('src', path);
+            });
+
+            $("#quizImg").change(async function() {
+                let path = await uploadImage(this.files[0]).catch(e => console.log(e));
+                quizForm.imagePath = path;
+                $("#quizImgPrev").attr('src', path);
+            });
+
+            function uploadImage(file) {
+                let formData = new FormData();
+                formData.set('image', file);
+
+                return new Promise(function(resolve, reject) {
+                    axios.post('/api/uploadImage', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    }).then(function(response) {
+                        resolve(response.data);
+                    }).catch(function(err) {
+                        reject(err);
+                    });
                 });
+            }
 
             function updateQuizForms() {
                 $(".collapseQuizForm").each(function(i) {
                     this.innerHTML = "Question " + (i + 1);
                 });
             }
-            
-            function getType(i) {
-                let questionTypes = ["multiple_choice", "true_false"];
-                return questionTypes[i];
-            }
-            
-            function getFileBinary() {
-                
-            }
 
             function submitQuizForm() {
                 if (qfLength() > 1 && $("#quizForm")[0].checkValidity()) {
-                    var r = new FileReader();
-                    r.onloadend = function(e) {
-                        var arr = Array.from(new Uint8Array(e.target.result));
-                        
-                        let quizForm = {
-                            topic: $("#quizTitle").val(),
-                            category: $("#quizCategory").val(),
-                            description: $("#quizDescription").val(),
-                            image: Array.from(new Uint8Array(e.target.result)),
-                            questions: []
-                        };    
-                    
-                        $(".quizForm").each(function(i) {
-                            let type = getType([$(this).find(".questionType")[0].selectedIndex]);
-                            let a = $(this).find(".alternative");
-                            let alt = type === "multiple_choice" ? `${a[0].value}|${a[1].value}|${a[2].value}|${a[3].value}` : null;
-                        
-                            let question = {
-                                correctAnswer: $(this).find(".correctAnswer").children("option:selected").val(),
-                                questionText: $(this).find(".questionText")[0].value,
-                                questionType: type,
-                                alternatives: alt
-                            };
-
-                            quizForm.questions.push(question);
-                        });
-                    
-                        console.log(quizForm);
-
-                        axios.post('/api/create', quizForm).then(function(response) {
-                            console.log(response);
-                        });
+                    let quizForm = {
+                        topic: $("#quizTitle").val(),
+                        category: $("#quizCategory").val(),
+                        description: $("#quizDescription").val(),
+                        imagePath: $("#quizImgPrev").attr('src'),
+                        questions: []
                     };
 
-                    let file = document.getElementById("quizImage").files[0];
-                    console.log(file);
-                    r.readAsArrayBuffer(file);
+                    $(".quizForm").each(function(i) {
+                        let type = getType([$(this).find(".questionType")[0].selectedIndex]);
+                        let a = $(this).find(".alternative");
+                        let alt = type === "multiple_choice" ? JSON.stringify([a[0].value, a[1].value, a[2].value, a[3].value]) : null;
+
+                        let question = {
+                            correctAnswer: $(this).find(".correctAnswer").children("option:selected").val(),
+                            questionText: $(this).find(".questionText")[0].value,
+                            questionType: type,
+                            imagePath: $(this).find(".questionImgPrev").attr('src'),
+                            alternatives: alt
+                        };
+
+                        quizForm.questions.push(question);
+                    });
+
+                    console.log(quizForm);
+
+                    axios.post('/api/create',
+                        JSON.stringify(quizForm),
+                        {
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        }).then(function(response) {
+                        console.log(response);
+                    });
                 } else {
                     $(".alert").show().delay(2000).fadeOut();
                 }
@@ -177,7 +194,11 @@
                         </button>
                         <label>Question Text</label>
                         <textarea class="border rounded bg-white questionText" required style="margin-bottom: 15px; padding: 5px; font-size: 30px; width: 100%; text-align: center;"></textarea>
-                        <button type="button" class="btn btn-primary questionImage" style="margin: 5px; width: 98%">Add image</button>
+                        
+                        <label>Question Image</label>
+                        <input type="file" class="btn btn-primary questionImg" style="margin: 5px; width: 98%" value="Add image"/>
+                        <img style="display:block; margin:auto;" class="questionImgPrev" width="500"/>
+                        
                         <div class="form-group">
                             <label>Question Type</label>
                             <select class="form-control questionType">
