@@ -24,7 +24,7 @@ namespace Qwiz
             {
                 var services = scope.ServiceProvider;
                 
-                var db = services.GetService<ApplicationDbContext>();
+                var db = services.GetRequiredService<ApplicationDbContext>();
                 
                 var um = services.GetRequiredService<UserManager<ApplicationUser>>();
                 var rm = services.GetRequiredService<RoleManager<IdentityRole>>();
