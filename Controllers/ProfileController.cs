@@ -27,6 +27,7 @@ namespace Qwiz.Controllers
             
         }
         
+        [Authorize]
         public async Task<IActionResult> Index()
         {
             var user = await _um.GetUserAsync(User);

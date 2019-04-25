@@ -45,6 +45,7 @@ body {
   /* Margin bottom by footer height */
   margin-bottom: 60px;
 }
+
 .footer {
   position: absolute;
   bottom: 0;
@@ -57,4 +58,12 @@ body {
 
 .center-block {
   display: block; margin-right: auto; margin-left: auto;
+}
+
+.avatar {
+  vertical-align: middle;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
 }

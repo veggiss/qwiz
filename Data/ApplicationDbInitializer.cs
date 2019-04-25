@@ -16,7 +16,7 @@ namespace Qwiz.Data
             db.Database.EnsureDeleted();
             db.Database.EnsureCreated();
             
-            var user = new ApplicationUser { UserName = "user@uia.no", Email = "user@uia.no"};
+            var user = new ApplicationUser {FirstName = "Admin", LastName = "Boss", UserName = "user@uia.no", Email = "user@uia.no"};
             um.CreateAsync(user, "Password1.").Wait();
             db.SaveChanges();
             
