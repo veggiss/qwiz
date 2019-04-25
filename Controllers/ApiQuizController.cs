@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Qwiz.Data;
 using Qwiz.Models;
 
@@ -36,18 +39,19 @@ namespace Qwiz.Controllers
         // api/answer?id=1&guess=A
         [HttpGet("answer")]
         [Authorize]
-        public async Task<IActionResult> CheckAnswer(int id, string guess)
+        public async Task<IActionResult> CheckAnswer(int quizId, int questionId, string guess)
         {
-            var question = _db.Questions.Find(id);
-            if (question == null) return NotFound();
-
-            if (guess == question.CorrectAnswer)
+            var user = await _um.GetUserAsync(User);
+            var question = await _db.Questions.FindAsync(questionId);
+            if (question == null) return BadRequest("Couldn't find that question");
+            
+            if (!user.QuestionsTaken.Contains(question))
             {
-                var user = await _um.GetUserAsync(User);
-                AddExperience(user, question.Difficulty); 
+                AddQuestionTaken(user, question);
+                if (guess == question.CorrectAnswer) AddExperience(user, question.Difficulty);
             }
-
-            return Ok(question.CorrectAnswer);
+            
+            return Ok(new { correctAnswer = question.CorrectAnswer, quizFinished = await UpdateQuizTaken(user, quizId, question)});
         }
 
         [HttpPost("create")]
@@ -92,6 +96,12 @@ namespace Qwiz.Controllers
 
             return value;
         }
+
+        private async void AddQuestionTaken(ApplicationUser user, Question question)
+        {
+            user.QuestionsTaken.Add(question);
+            await _um.UpdateAsync(user);
+        }
         
         private async void AddExperience(ApplicationUser user, string type)
         {
@@ -104,6 +114,30 @@ namespace Qwiz.Controllers
             }
             
             await _um.UpdateAsync(user);
+        }
+
+        // This operation might be too complex, another option might be to add corresponding quiz to each question on creation.
+        private async Task<bool> UpdateQuizTaken(ApplicationUser user, int id, Question question)
+        {
+            Quiz quiz = await _db.Quizzes
+                .Include(m => m.Questions)
+                .FirstOrDefaultAsync(i => i.Id == id);
+
+            if (quiz == null) return false;
+            if (!quiz.Questions.Contains(question)) return false;
+            
+            foreach(var q in quiz.Questions.ToList())
+            {
+                if (!user.QuestionsTaken.Contains(q)) return false;
+            }
+
+            var usrContext = await _db.Users.Include(u => u.QuizzesTaken).SingleOrDefaultAsync(u => u.Id == user.Id);
+            usrContext.QuizzesTaken.Add(quiz);
+            await _um.UpdateAsync(usrContext);
+            _db.SaveChanges();
+                
+            return true;
+
         }
     }
 }

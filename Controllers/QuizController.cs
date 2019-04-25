@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Qwiz.Data;
+using Qwiz.Models;
 
 namespace Qwiz.Controllers
 {
@@ -22,7 +23,7 @@ namespace Qwiz.Controllers
             return View(await quizzes.ToListAsync());
         }
 
-        public async Task<IActionResult> Play(int? id)
+        public async Task<IActionResult> Play(int id)
         {
             var quizzes = await _db.Quizzes
                 .Include(c => c.Questions)
@@ -33,7 +34,7 @@ namespace Qwiz.Controllers
             if (questions == null) return NotFound();
             questions.ForEach(item => item.CorrectAnswer = "");
             
-            return View(questions.ToList());
+            return View(new QuizViewModel(id, questions.ToList()));
         }
 
         public IActionResult Create()

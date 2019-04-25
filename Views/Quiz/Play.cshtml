@@ -1,19 +1,19 @@
-@model List<Question>
+@model QuizViewModel
 
 <div id="app" style="margin: 0 auto; width: 555px;">
     <div class="text-center">
-        <h1 class="display-4" style="font-size: 40px; width: 100%; text-align: center;">{{quiz[page].questionText}}</h1>
-        <img style="display:block; margin:auto;" class="questionImgPrev" width="500" v-bind:src="quiz[page].imagePath"/>
+        <h1 class="display-4" style="font-size: 40px; width: 100%; text-align: center;">{{quiz.questions[page].questionText}}</h1>
+        <img style="display:block; margin:auto;" class="questionImgPrev" width="500" v-bind:src="quiz.questions[page].imagePath"/>
     </div>
     
     <div id="progressBar" class="progress"></div>
     
     <div id="question">
         <div class="multiple_choice">
-            <button id="btn_A" v-on:click="answer('A')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].alternatives[0]}}</button>
-            <button id="btn_B" v-on:click="answer('B')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].alternatives[1]}}</button>
-            <button id="btn_C" v-on:click="answer('C')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].alternatives[2]}}</button>
-            <button id="btn_D" v-on:click="answer('D')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz[page].alternatives[3]}}</button>
+            <button id="btn_A" v-on:click="answer('A')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz.questions[page].alternatives[0]}}</button>
+            <button id="btn_B" v-on:click="answer('B')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz.questions[page].alternatives[1]}}</button>
+            <button id="btn_C" v-on:click="answer('C')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz.questions[page].alternatives[2]}}</button>
+            <button id="btn_D" v-on:click="answer('D')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz.questions[page].alternatives[3]}}</button>
         </div>
 
         <div class="true_false" style="display: none">
@@ -33,8 +33,8 @@
     <script>
         $(document).ready(() => {
             let quizForm = @Json.Serialize(Model);
-
-            quizForm.forEach(e => {
+            
+            quizForm.questions.forEach(e => {
                 if (e.questionType === "multiple_choice") e.alternatives = JSON.parse(e.alternatives);
                 else e.alternatives = ['', '', '', ''];
             });
@@ -57,11 +57,14 @@
                         let self = this;
                         if (!self.guessed && !self.finished) {
                             console.log("guessed");
-                            let id = this.quiz[this.page].id;
-                            axios.get(`/api/answer?id=${id}&guess=${alt}`).then(function(response) {
-                                $("#btn_" + response.data).css("background-color", "#28a745");
-
-                                if (response.data.toString() !== alt) self.wrongAnswer(alt);
+                            let questionId = this.quiz.questions[this.page].id;
+                            let quizId = this.quiz.id;
+                            
+                            console.log(`/api/answer?quizId=${quizId}&questionId=${questionId}&guess=${alt}`);
+                            axios.get(`/api/answer?quizId=${quizId}&questionId=${questionId}&guess=${alt}`).then(function(response) {
+                                let answer = response.data.correctAnswer;
+                                $("#btn_" + answer).css("background-color", "#28a745");
+                                if (answer !== alt) self.wrongAnswer(alt);
                                 else self.correctAnswer();
 
                                 self.guessed = true;
@@ -70,13 +73,13 @@
                     },
                     next: function() {
                         if (this.guessed) {
-                            if (this.page < this.quiz.length - 1) {
+                            if (this.page < this.quiz.questions.length - 1) {
                                 ['#btn_A', '#btn_B', '#btn_C', '#btn_D', '#btn_true', '#btn_false'].forEach(
                                     e => $(e).css("background-color", "transparent"));
                                 this.page++;
                                 this.guessed = false;
                             } else {
-                                this.resultMsg = `${this.correctAnswers} of ${this.quiz.length} questions correct!`;
+                                this.resultMsg = `${this.correctAnswers} of ${this.quiz.questions.length} questions correct!`;
                                 this.finished = true;
                             }
 
@@ -84,7 +87,7 @@
                         }
                     },
                     renderQuestion: function() {
-                        if (quizForm[this.page].questionType === "multiple_choice") {
+                        if (this.quiz.questions[this.page].questionType === "multiple_choice") {
                             $(".multiple_choice").show();
                             $(".true_false").hide();
                         } else {
@@ -93,12 +96,18 @@
                         }
                     },
                     wrongAnswer: function(alt) {
-                        $("#progressBar").append(`<div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" role="progressbar" style="width: ${1 / this.quiz.length * 100}% "></div>`);
+                        $("#progressBar")
+                            .append(
+                                `<div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" role="progressbar" style="width: ${
+                                1 / this.quiz.questions.length * 100}% "></div>`);
                         $("#btn_" + alt).css("background-color", "#dc3545");
                     },
                     correctAnswer: function() {
                         this.correctAnswers++;
-                        $("#progressBar").append(`<div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" style="width: ${1 / this.quiz.length * 100}%"></div>`);
+                        $("#progressBar")
+                            .append(
+                                `<div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" style="width: ${
+                                1 / this.quiz.questions.length * 100}%"></div>`);
                     }
                 }
             });

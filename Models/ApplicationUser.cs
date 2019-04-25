@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 
@@ -11,5 +12,7 @@ namespace Qwiz.Models
         public int Xp { get; set; }
         public int Level { get; set; } = 1;
         public int XpNeeded { get; set; } = 500;
+        public List<Question> QuestionsTaken { get; set; } = new List<Question>();
+        public List<Quiz> QuizzesTaken { get; set; } = new List<Quiz>();
     }
 }

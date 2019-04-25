@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -30,83 +31,10 @@ namespace Qwiz.Controllers
         [Authorize]
         public async Task<IActionResult> Index()
         {
-            var user = await _um.GetUserAsync(User);
+            var usr = await _um.GetUserAsync(User);
+            var user = await _db.Users.Include(u => u.QuizzesTaken).SingleOrDefaultAsync(u => u.Id == usr.Id);
             return View(user);
         }
     }
 
 }
-
-
-// Accessing the result waits for async completion
-
-
-
-
-/* GET: Users
-[Authorize]
-        public async Task<IActionResult> Index()
-        {
-            var applicationDbInitializer = _dbContext.ApplicationUsers.Include(c => c.UserName);
-            return View(await ApplicationDbContext.ToListAsync());
-        }
-
-// GET: User/Profile
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var user = await _dbContext.ApplicationUsers
-                .Include(c => c.OwnerId)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            return View(user);
-        }
-        
-         public class ProfileController : Controller
-    {
-        
-
-        public ProfileController(ApplicationDbContext context)
-        {
-            _dbContext = context;
-            
-            
-    }*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*{
-    
-        
-        
-        
-        [Authorize]
-        public IActionResult Index()
-        {
-            var user = _um.GetUserAsync(User).Result;
-
-            return View(ApplicationUser);
-        }
-    }
-    
-    
-}
-*/

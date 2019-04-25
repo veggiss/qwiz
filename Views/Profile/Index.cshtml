@@ -2,7 +2,6 @@
 @{
     var xp = Model.Xp;
     var xpNeeded = Model.XpNeeded;
-    var percent = (xp / xpNeeded * 100) + "%";
 }
 
 <div class="container">
@@ -21,7 +20,7 @@
         </div>
         <div class="col-sm">
             <h4>Quizes taken</h4>
-            <h1>43</h1>
+            <h1>@Model.QuizzesTaken.Count</h1>
         </div>
     </div>
    
@@ -32,3 +31,18 @@
         </h4>
     </div>
 </div>
+
+@section Scripts
+{
+    <script>
+        let xp = @Model.Xp;
+        let xpNeeded = @Model.XpNeeded;
+        let quiztaken = @Model.QuizzesTaken;
+
+        console.log(quiztaken);
+        
+        $(".progress-bar").css("width", xp / xpNeeded * 100 + "%");
+
+        console.log(xp / xpNeeded * 100 + "%");
+    </script>
+}
