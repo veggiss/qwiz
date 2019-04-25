@@ -33,27 +33,34 @@ namespace Qwiz.Data
             db.SaveChanges();
 
             // Get questions from open trivia DB API
-            /*for (var i = 0; i < 20; i++)
+            /*for (var i = 0; i < 50; i++)
             {
+                Console.WriteLine("STARTING REQUEST ----------");
                 dynamic apiResponse = await GetRandomQuestion(5);
                 
                 var apiQuestions = new List<Question>();
                 
-                foreach (dynamic q in apiResponse.results)
+                foreach (var q in apiResponse.results)
                 {
                     string text = q.question;
                     text = System.Web.HttpUtility.HtmlDecode(text);
                     string qType = q.type;
+                    string qDifficulty = q.difficulty;
+                    
+                    Console.WriteLine(q);
                     
                     Question question;
                     if (qType == "multiple") {
                         string alt = "[\"" + q.correct_answer + "\",\"" + q.incorrect_answers[0] + "\",\"" + q.incorrect_answers[1] + "\",\"" + q.incorrect_answers[2] + "\"]";
-                        question = new Question("multiple_choice", text, alt, "A");
+                        Console.WriteLine(text);
+                        Console.WriteLine(alt);
+                        Console.WriteLine(q.difficulty);
+                        question = new Question("multiple_choice", text, alt, "A", qDifficulty, "");
                     } 
                     else
                     {
                         string answer = q.correct_answer;
-                        question = new Question("true_false", text, null, answer.ToLower());
+                        question = new Question("true_false", text, null, answer.ToLower(), qDifficulty, "");
                     }
                     
                     apiQuestions.Add(question);
@@ -61,7 +68,7 @@ namespace Qwiz.Data
                     db.SaveChanges();
                 }
                 
-                await db.Quizzes.AddRangeAsync(new Quiz(user, apiQuestions, "Random", "Random", "Random", ""));
+                await db.Quizzes.AddRangeAsync(new Quiz(user, apiQuestions, "Random", "Random", "Random"));
                 db.SaveChanges();
             }*/
         }

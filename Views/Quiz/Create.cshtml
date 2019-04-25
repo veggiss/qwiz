@@ -25,7 +25,7 @@
                  </div>
                  <div class="form-group">
                      <label>Description</label>
-                     <input id="quizDescription" type="text" class="form-control input-medium" required>
+                     <input id="quizDescription" type="text" class="form-control" required>
                  </div>
             </div>
         </div>
@@ -162,8 +162,9 @@
                             questionText: $(this).find(".questionText")[0].value,
                             questionType: type,
                             imagePath: $(this).find(".questionImgPrev").attr('src'),
-                            alternatives: alt
-                        };
+                            alternatives: alt,
+                            difficulty: $(this).find(".questionDifficulty").children("option:selected").val().toLowerCase()
+                    };
 
                         quizForm.questions.push(question);
                     });
@@ -198,6 +199,15 @@
                         <label>Question Image</label>
                         <input type="file" class="btn btn-primary questionImg" style="margin: 5px; width: 98%" value="Add image"/>
                         <img style="display:block; margin:auto;" class="questionImgPrev" width="500"/>
+                        
+                        <div class="form-group">
+                            <label>Question Difficulty</label>
+                            <select class="form-control questionDifficulty">
+                                <option>Easy</option>
+                                <option>Medium</option>
+                                <option>Hard</option>
+                            </select>
+                        </div>
                         
                         <div class="form-group">
                             <label>Question Type</label>
