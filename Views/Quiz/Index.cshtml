@@ -29,5 +29,9 @@
 
 @section Scripts
 {
-    
+    <script>
+        axios.get(`/api/getUser?id=1`).then(function(response) {
+            console.log(response);
+        });
+    </script>
 }

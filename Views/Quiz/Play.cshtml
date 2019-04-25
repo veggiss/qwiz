@@ -58,7 +58,7 @@
                         if (!self.guessed && !self.finished) {
                             console.log("guessed");
                             let id = this.quiz[this.page].id;
-                            axios.get(`/api/answer?id=${id}`).then(function(response) {
+                            axios.get(`/api/answer?id=${id}&guess=${alt}`).then(function(response) {
                                 $("#btn_" + response.data).css("background-color", "#28a745");
 
                                 if (response.data.toString() !== alt) self.wrongAnswer(alt);

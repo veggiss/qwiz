@@ -20,8 +20,8 @@ namespace Qwiz.Data
             um.CreateAsync(user, "Password1.").Wait();
             db.SaveChanges();
             
-            var question1 = new Question("multiple_choice", "What color is grass?", "[\"a\", \"b\", \"c\", \"d\"]", "A", "");
-            var question2 = new Question("true_false", "Is grass green?", null, "true", "");
+            var question1 = new Question("multiple_choice", "What color is grass?", "[\"a\", \"b\", \"c\", \"d\"]", "A", "hard", "");
+            var question2 = new Question("true_false", "Is grass green?", null, "true", "easy", "");
             
             await db.Questions.AddRangeAsync(question1, question2);
             db.SaveChanges();

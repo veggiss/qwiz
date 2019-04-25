@@ -6,12 +6,13 @@ namespace Qwiz.Models
     {
         public Question() {}
 
-        public Question(string type, string text, string alt, string answer, string imagePath)
+        public Question(string type, string text, string alt, string answer, string difficulty, string imagePath)
         {
             QuestionType = type;
             QuestionText = text;
             Alternatives = alt;
             CorrectAnswer = answer;
+            Difficulty = difficulty;
             ImagePath = imagePath;
         }
         
@@ -28,5 +29,8 @@ namespace Qwiz.Models
         public string CorrectAnswer { get; set; }
         [MaxLength(64)]
         public string ImagePath { get; set; }
+        [Required]
+        [RegularExpression("^(easy|medium|hard)$", ErrorMessage = "Difficulty type not accepted")]
+        public string Difficulty { get; set; }
     }
 }
