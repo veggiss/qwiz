@@ -30,7 +30,6 @@ namespace Qwiz.Controllers
         public async Task<IActionResult> Index()
         {
             var user = _um.GetUserAsync(User).Result;
-            ViewBag.NickName = user.Nickname;
             return View();
         }
     }

@@ -3,8 +3,8 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Razor.Language;
 using Qwiz.Data;
 using Qwiz.Models;
 
@@ -17,28 +17,42 @@ namespace Qwiz.Controllers
     public class ApiQuizController : Controller
     {
         private readonly ApplicationDbContext _db;
+        private readonly UserManager<ApplicationUser> _um;
         
-        public ApiQuizController(ApplicationDbContext db)
+        public ApiQuizController(ApplicationDbContext db, UserManager<ApplicationUser> um)
         {
             _db = db;
+            _um = um;
+        }
+
+        [HttpGet("getUser")]
+        public async Task<IActionResult> GetUser()
+        {
+            ApplicationUser user = await _um.FindByEmailAsync("user@uia.no");
+
+            return Ok(user);
         }
         
-        // api/answer?id=1
+        // api/answer?id=1&guess=A
         [HttpGet("answer")]
-        public IActionResult CheckAnswer(int id)
+        [Authorize]
+        public async Task<IActionResult> CheckAnswer(int id, string guess)
         {
             var question = _db.Questions.Find(id);
             if (question == null) return NotFound();
-            
+
+            if (guess == question.CorrectAnswer)
+            {
+                var user = await _um.GetUserAsync(User);
+                AddExperience(user, question.Difficulty); 
+            }
+
             return Ok(question.CorrectAnswer);
         }
 
         [HttpPost("create")]
         public IActionResult CreateQuiz([FromBody] Quiz quiz)
         {
-            //var value = obj.questions;
-            //Console.WriteLine(value[0].questionType);
-            
             if (quiz.Id != 0) return BadRequest();
             if (!ModelState.IsValid) return BadRequest();
             
@@ -64,6 +78,32 @@ namespace Qwiz.Controllers
             }
 
             return Ok("/images/" + filename);
+        }
+
+        private static int XpGainedFromQuestion(string type)
+        {
+            int value = 0;
+
+            if (type == "easy")
+                value = 100;
+            else if (type == "medium")
+                value = 150;
+            else if (type == "hard") value = 200;
+
+            return value;
+        }
+        
+        private async void AddExperience(ApplicationUser user, string type)
+        {
+            user.Xp += XpGainedFromQuestion(type);
+            
+            if (user.XpNeeded <= user.Xp) {
+                user.Level++;
+                user.Xp -= user.XpNeeded;
+                user.XpNeeded = (int) Math.Round(user.XpNeeded * 1.1);
+            }
+            
+            await _um.UpdateAsync(user);
         }
     }
 }
