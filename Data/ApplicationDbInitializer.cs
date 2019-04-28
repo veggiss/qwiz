@@ -33,28 +33,23 @@ namespace Qwiz.Data
             db.SaveChanges();
 
             // Get questions from open trivia DB API
-            /*for (var i = 0; i < 50; i++)
+            for (var i = 0; i < 5; i++)
             {
-                Console.WriteLine("STARTING REQUEST ----------");
                 dynamic apiResponse = await GetRandomQuestion(5);
                 
                 var apiQuestions = new List<Question>();
                 
                 foreach (var q in apiResponse.results)
                 {
-                    string text = q.question;
-                    text = System.Web.HttpUtility.HtmlDecode(text);
+                    if (q == null) continue;
+                    
+                    string text = System.Web.HttpUtility.HtmlDecode((string) q.question);
                     string qType = q.type;
                     string qDifficulty = q.difficulty;
-                    
-                    Console.WriteLine(q);
                     
                     Question question;
                     if (qType == "multiple") {
                         string alt = "[\"" + q.correct_answer + "\",\"" + q.incorrect_answers[0] + "\",\"" + q.incorrect_answers[1] + "\",\"" + q.incorrect_answers[2] + "\"]";
-                        Console.WriteLine(text);
-                        Console.WriteLine(alt);
-                        Console.WriteLine(q.difficulty);
                         question = new Question("multiple_choice", text, alt, "A", qDifficulty, "");
                     } 
                     else
@@ -70,7 +65,7 @@ namespace Qwiz.Data
                 
                 await db.Quizzes.AddRangeAsync(new Quiz(user, apiQuestions, "Random", "Random", "Random"));
                 db.SaveChanges();
-            }*/
+            }
         }
 
         private static async Task<object> GetRandomQuestion(int amount)
@@ -83,14 +78,9 @@ namespace Qwiz.Data
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
                 HttpResponseMessage response = await client.GetAsync("api.php?amount=" + amount);
-                if (response.IsSuccessStatusCode)
-                {
-                    product = await response.Content.ReadAsAsync<object>();
-                }
-                else
-                {
-                    product = null;
-                }
+                
+                if (response.IsSuccessStatusCode) product = await response.Content.ReadAsAsync<object>();
+                else product = null;
 
                 return product;
             }

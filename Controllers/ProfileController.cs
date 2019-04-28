@@ -16,27 +16,23 @@ namespace Qwiz.Controllers
     {
     
         private readonly ApplicationDbContext _db;
-        
-        private UserManager<ApplicationUser> _um;
+        private readonly UserManager<ApplicationUser> _um;
 
         public ProfileController(ApplicationDbContext db, UserManager<ApplicationUser> um)
-
-
         {
             _db = db;
             _um = um;
-            
         }
         
         [Authorize]
         public async Task<IActionResult> Index()
         {
-            var usr = await _um.GetUserAsync(User);
-            var user = await _db.Users
+            return View(await _db.Users
+                .Include(u => u.QuestionsTaken)
+                .ThenInclude(u => u.Question)
                 .Include(u => u.QuizzesTaken)
-                .Include(u => u.QuizzesTaken)
-                .SingleOrDefaultAsync(u => u.Id == usr.Id);
-            return View(user);
+                .ThenInclude(u => u.Quiz)
+                .SingleOrDefaultAsync(u => u.Id == _um.GetUserId(User)));
         }
     }
 

@@ -49,8 +49,9 @@ namespace Qwiz.Controllers
 
             if (user.QuestionsTaken.Find(q => q.Question == question) == null)
             {
-                AddQuestionTaken(user, question);
-                if (guess == question.CorrectAnswer) AddExperience(user, question.Difficulty);
+                var answeredCorrectly = guess == question.CorrectAnswer;
+                AddQuestionTaken(user, question, answeredCorrectly);
+                if (answeredCorrectly) AddExperience(user, XpGainedFromQuestion(question.Difficulty));
             }
             
             return Ok(new { correctAnswer = question.CorrectAnswer, quizFinished = await UpdateQuizTaken(user, quizId, question)});
@@ -99,15 +100,15 @@ namespace Qwiz.Controllers
             return value;
         }
 
-        private async void AddQuestionTaken(ApplicationUser user, Question question)
+        private async void AddQuestionTaken(ApplicationUser user, Question question, bool answeredCorrectly)
         {
-            user.QuestionsTaken.Add(new QuestionTaken(question, true));
+            user.QuestionsTaken.Add(new QuestionTaken(question, answeredCorrectly));
             await _um.UpdateAsync(user);
         }
         
-        private async void AddExperience(ApplicationUser user, string type)
+        private async void AddExperience(ApplicationUser user, int amount)
         {
-            user.Xp += XpGainedFromQuestion(type);
+            user.Xp += amount;
             
             if (user.XpNeeded <= user.Xp) {
                 user.Level++;
@@ -128,13 +129,19 @@ namespace Qwiz.Controllers
             if (quiz == null) return false;
             if (!quiz.Questions.Contains(question)) return false;
             if (user.QuizzesTaken.Find(q => q.Quiz == quiz) != null) return false;
+
+            var correctAnswers = 0;
+            var score = 0;
             
             foreach(var a in quiz.Questions)
             {
-                if (user.QuestionsTaken.Find(b => b.Question == a) == null) return false;
+                var questionTaken = user.QuestionsTaken.Find(b => b.Question == a);
+                if (questionTaken == null) return false;
+                if (questionTaken.AnsweredCorrectly) correctAnswers++;
+                score += XpGainedFromQuestion(questionTaken.Question.Difficulty);
             }
             
-            user.QuizzesTaken.Add(new QuizTaken(quiz, 0, 0));
+            user.QuizzesTaken.Add(new QuizTaken(quiz, correctAnswers, score));
             await _um.UpdateAsync(user);
                 
             return true;

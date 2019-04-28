@@ -38,16 +38,17 @@
                     <h4 class="float-left m-0"><i class="material-icons float-left">expand_more</i>&emsp;History</h4>
                 </div>
             </div>
-  
+            
             <div id="history_show" class="collapse show" aria-labelledby="history_hide" data-parent="#accordion">
-                <div class="card-body">
-                    <div class="row justify-content-center">
-                        @foreach (var item in Model.QuestionsTaken)
-                        {
-                            <h1>@item.Question.Id</h1>
-                        }
+                @foreach (var item in Model.QuizzesTaken)
+                {
+                    <div class="float-left m-1 p-2 table-active" style="border-radius: 6px; width: 10.62rem;">
+                        <h6 class="card-title">@item.Quiz.Topic</h6>
+                        <h6 class="card-subtitle mb-2 text-muted">@item.Quiz.Category</h6>
+                        <h6 class="card-subtitle mb-2 text-muted">@item.Score XP</h6>
+                        <h6 class="card-subtitle mb-2 text-muted">You got @item.CorrectAnswers of @item.Quiz.Questions.Count questions correct</h6>
                     </div>
-                </div>
+                }
             </div>
         </div>
     </div>
