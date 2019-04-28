@@ -32,7 +32,10 @@ namespace Qwiz.Controllers
         public async Task<IActionResult> Index()
         {
             var usr = await _um.GetUserAsync(User);
-            var user = await _db.Users.Include(u => u.QuizzesTaken).SingleOrDefaultAsync(u => u.Id == usr.Id);
+            var user = await _db.Users
+                .Include(u => u.QuizzesTaken)
+                .Include(u => u.QuizzesTaken)
+                .SingleOrDefaultAsync(u => u.Id == usr.Id);
             return View(user);
         }
     }

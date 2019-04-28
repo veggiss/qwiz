@@ -12,7 +12,7 @@ namespace Qwiz.Models
         public int Xp { get; set; }
         public int Level { get; set; } = 1;
         public int XpNeeded { get; set; } = 500;
-        public List<Question> QuestionsTaken { get; set; } = new List<Question>();
-        public List<Quiz> QuizzesTaken { get; set; } = new List<Quiz>();
+        public List<QuestionTaken> QuestionsTaken { get; set; } = new List<QuestionTaken>();
+        public List<QuizTaken> QuizzesTaken { get; set; } = new List<QuizTaken>();
     }
 }

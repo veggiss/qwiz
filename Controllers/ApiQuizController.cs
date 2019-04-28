@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -41,11 +40,14 @@ namespace Qwiz.Controllers
         [Authorize]
         public async Task<IActionResult> CheckAnswer(int quizId, int questionId, string guess)
         {
-            var user = await _um.GetUserAsync(User);
             var question = await _db.Questions.FindAsync(questionId);
             if (question == null) return BadRequest("Couldn't find that question");
-            
-            if (!user.QuestionsTaken.Contains(question))
+            var user = await _db.Users
+                .Include(u => u.QuestionsTaken)
+                .Include(u => u.QuizzesTaken)
+                .SingleOrDefaultAsync(u => u.Id == _um.GetUserId(User));
+
+            if (user.QuestionsTaken.Find(q => q.Question == question) == null)
             {
                 AddQuestionTaken(user, question);
                 if (guess == question.CorrectAnswer) AddExperience(user, question.Difficulty);
@@ -99,7 +101,7 @@ namespace Qwiz.Controllers
 
         private async void AddQuestionTaken(ApplicationUser user, Question question)
         {
-            user.QuestionsTaken.Add(question);
+            user.QuestionsTaken.Add(new QuestionTaken(question, true));
             await _um.UpdateAsync(user);
         }
         
@@ -125,19 +127,17 @@ namespace Qwiz.Controllers
 
             if (quiz == null) return false;
             if (!quiz.Questions.Contains(question)) return false;
+            if (user.QuizzesTaken.Find(q => q.Quiz == quiz) != null) return false;
             
-            foreach(var q in quiz.Questions.ToList())
+            foreach(var a in quiz.Questions)
             {
-                if (!user.QuestionsTaken.Contains(q)) return false;
+                if (user.QuestionsTaken.Find(b => b.Question == a) == null) return false;
             }
-
-            var usrContext = await _db.Users.Include(u => u.QuizzesTaken).SingleOrDefaultAsync(u => u.Id == user.Id);
-            usrContext.QuizzesTaken.Add(quiz);
-            await _um.UpdateAsync(usrContext);
-            _db.SaveChanges();
+            
+            user.QuizzesTaken.Add(new QuizTaken(quiz, 0, 0));
+            await _um.UpdateAsync(user);
                 
             return true;
-
         }
     }
 }

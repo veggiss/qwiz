@@ -8,7 +8,7 @@
     <div class="row text-center">
         <div class="col-sm">
             <div class="d-flex flex-column">
-                <h4>Level</h4>
+                <h1>Level</h1>
                 <h1>@Model.Level</h1>
             </div>
         </div>
@@ -19,30 +19,43 @@
             </div>
         </div>
         <div class="col-sm">
-            <h4>Quizes taken</h4>
+            <h1>Quizzes taken</h1>
             <h1>@Model.QuizzesTaken.Count</h1>
         </div>
     </div>
    
-    <div class="progress position-relative m-1" style="height: 29px">
+    <div class="progress position-relative m-1" style="height: 29px;">
         <div class="progress-bar" role="progressbar"></div>
         <h4 class="justify-content-center d-flex position-absolute w-100">
             @xp / @xpNeeded
         </h4>
+    </div>
+    
+    <div id="accordion">
+        <div class="card m-1">
+            <div class="card-header" id="history_hide">
+                <div data-toggle="collapse" style="cursor: pointer;" data-target="#history_show" aria-expanded="true" aria-controls="history_show">
+                    <h4 class="float-left m-0"><i class="material-icons float-left">expand_more</i>&emsp;History</h4>
+                </div>
+            </div>
+  
+            <div id="history_show" class="collapse show" aria-labelledby="history_hide" data-parent="#accordion">
+                <div class="card-body">
+                    <div class="row justify-content-center">
+                        @foreach (var item in Model.QuestionsTaken)
+                        {
+                            <h1>@item.Question.Id</h1>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 @section Scripts
 {
     <script>
-        let xp = @Model.Xp;
-        let xpNeeded = @Model.XpNeeded;
-        let quiztaken = @Model.QuizzesTaken;
-
-        console.log(quiztaken);
-        
-        $(".progress-bar").css("width", xp / xpNeeded * 100 + "%");
-
-        console.log(xp / xpNeeded * 100 + "%");
+        $(".progress-bar").css("width", ((@Model.Xp) / (@Model.XpNeeded)) * 100 + "%");
     </script>
 }
