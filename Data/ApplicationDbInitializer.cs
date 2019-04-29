@@ -33,10 +33,10 @@ namespace Qwiz.Data
             db.SaveChanges();
 
             // Get questions from open trivia DB API
-            /*for (var i = 0; i < 50; i++)
+            for (var i = 0; i < 5; i++)
             {
                 Console.WriteLine("STARTING REQUEST ----------");
-                dynamic apiResponse = await GetRandomQuestion(5);
+                dynamic apiResponse = await GetRandomQuestion(1);
                 
                 var apiQuestions = new List<Question>();
                 
@@ -70,7 +70,7 @@ namespace Qwiz.Data
                 
                 await db.Quizzes.AddRangeAsync(new Quiz(user, apiQuestions, "Random", "Random", "Random"));
                 db.SaveChanges();
-            }*/
+            }
         }
 
         private static async Task<object> GetRandomQuestion(int amount)

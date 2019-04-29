@@ -1,32 +1,94 @@
 
-<table style="width: 80%" span class="boarder box-shadow">
-<div class="container">
-<tr>
-    <th>Rank</th>
-    <th>Username</th>
-    <th>Quizes Taken</th>
-    <th>Clan</th>
-</tr>
+<link href="~/css/fresh-bootstrap-table.css" rel="stylesheet" />
+
+
+<div class="text-center">
+    <h1 class="display-4">Leaderboard</h1>
+    <br/>
+        
+    <nav>
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <a class="nav-item nav-link active" id="nav-All-time-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">All time</a>
+            <a class="nav-item nav-link" id="nav-Weekly-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false">Weekly</a>
+            <a class="nav-item nav-link" id="nav-Daily-tab" data-toggle="tab" href="#nav-contact" role="tab" aria-controls="nav-contact" aria-selected="false">Daily</a>
+        </div>
+    </nav>
+    <div class="tab-content" id="nav-tabContent">
+        <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+            <table id="Leaderboard" class="table table-striped table-dark, table table-hover">
+                <thead class="bg-primary">
+               <th scope="col"><strong>Ranking #</strong></th>
+                <th scope="col"><strong>Username</strong></th>
+                <th scope="col"><strong>Quizes Taken</strong></th>
+                <th scope="col"><strong>Clan</strong></th>
+                
+                </thead>
+                
+    
+                <tbody>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>preben</td>
+                    <td>50</td>
+                    <td>UiA</td>
+                </tr>
+            
+                <tr>
+                    <th scope="row">2</th>
+                    <td>Stian</td>
+                    <td>94</td>
+                    <td>Thor Heyerdahl vgs</td>
+                </tr>
+            
+                <tr>
+                    <th scope="row">3</th>
+                    <td>Hårfagre</td>
+                    <td>38</td>
+                    <td>Dahlske</td>
+        
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+            <table id="Leaderboard" class="table table-striped table-dark, table table-hover">
+                <thead class="bg-primary">
+                <th scope="col"><strong>Ranking #</strong></th>
+                <th scope="col"><strong>Username</strong></th>
+                <th scope="col"><strong>Quizes Taken</strong></th>
+                <th scope="col"><strong>Clan</strong></th>
+                
+                </thead>
+                
+    
+                <tbody>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>Stine</td>
+                    <td>15</td>
+                    <td>UiA</td>
+                </tr>
+            
+                <tr>
+                    <th scope="row">2</th>
+                    <td>Arne</td>
+                    <td>12</td>
+                    <td>Thor Heyerdahl vgs</td>
+                </tr>
+            
+                <tr>
+                    <th scope="row">3</th>
+                    <td>Kine</td>
+                    <td>10</td>
+                    <td>Dahlske</td>
+        
+                </tr>
+                </tbody>
+            </table>
+            
+            
+        </div>
+        <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">Daily</div>
+    </div>
+        
 </div>
-
-    <tr>
-        <td>1</td>
-        <td>preben;.no</td>
-        <td>50</td>
-        <td>UiA</td>
-    </tr>
-    <tr>
-        <td>2</td>
-        <td>Stian</td>
-        <td>94</td>
-        <td>Thor Heyerdahl vgs</td>
-    </tr>
-    <tr>
-        <td>2</td>
-        <td>Hårfagre</td>
-        <td>38</td>
-        <td>Dahlske</td>
-
-    </tr>
-
-</table> 

@@ -8,18 +8,18 @@
     <div class="row text-center">
         <div class="col-sm">
             <div class="d-flex flex-column">
-                <h4>Level</h4>
+                <h4 class="text-primary">Level</h4>
                 <h1>@Model.Level</h1>
             </div>
         </div>
         <div class="col-sm">
             <div class="d-flex flex-column">
-                <img class="avatar mx-auto d-block" alt="" src="https://images.immediate.co.uk/volatile/sites/4/2018/08/iStock_000044061370_Medium-fa5f8aa.jpg?quality=45&crop=5px,17px,929px,400px&resize=960,413">
-                @Model.UserName
+                <img class="avatar mx-auto d-block" alt="" src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Circle-icons-profile.svg">
+                <div class="text-primary">@Model.UserName</div>
             </div>
         </div>
         <div class="col-sm">
-            <h4>Quizes taken</h4>
+            <h4 class="text-primary">Quizes taken</h4>
             <h1>@Model.QuizzesTaken.Count</h1>
         </div>
     </div>
