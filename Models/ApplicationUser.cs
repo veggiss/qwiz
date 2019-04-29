@@ -14,5 +14,6 @@ namespace Qwiz.Models
         public int XpNeeded { get; set; } = 500;
         public List<QuestionTaken> QuestionsTaken { get; set; } = new List<QuestionTaken>();
         public List<QuizTaken> QuizzesTaken { get; set; } = new List<QuizTaken>();
+        public List<Quiz> MyQuizzes { get; set; } = new List<Quiz>();
     }
 }

@@ -32,6 +32,7 @@ namespace Qwiz.Controllers
                 .ThenInclude(u => u.Question)
                 .Include(u => u.QuizzesTaken)
                 .ThenInclude(u => u.Quiz)
+                .Include(u => u.MyQuizzes)
                 .SingleOrDefaultAsync(u => u.Id == _um.GetUserId(User)));
         }
     }

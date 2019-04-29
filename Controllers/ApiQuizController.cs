@@ -58,14 +58,20 @@ namespace Qwiz.Controllers
         }
 
         [HttpPost("create")]
-        public IActionResult CreateQuiz([FromBody] Quiz quiz)
+        [Authorize]
+        public async Task<IActionResult> CreateQuiz([FromBody] Quiz quiz)
         {
             if (quiz.Id != 0) return BadRequest();
             if (!ModelState.IsValid) return BadRequest();
             
             _db.Add(quiz);
-            _db.SaveChanges();
-
+            await _db.SaveChangesAsync();
+            
+            var user = await _um.GetUserAsync(User);
+            
+            user.MyQuizzes.Add(quiz);
+            await _um.UpdateAsync(user);
+            
             return Ok();
         }
 
