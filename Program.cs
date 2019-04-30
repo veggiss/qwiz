@@ -16,7 +16,7 @@ namespace Qwiz
 {
     public class Program
     {
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             var host = CreateWebHostBuilder(args).Build();
 
@@ -28,7 +28,7 @@ namespace Qwiz
                 var um = services.GetRequiredService<UserManager<ApplicationUser>>();
                 var rm = services.GetRequiredService<RoleManager<IdentityRole>>();
                 
-                await ApplicationDbInitializer.Initialize(db, um, rm);
+                ApplicationDbInitializer.Initialize(db, um, rm).Wait();
             }
 
             host.Run();

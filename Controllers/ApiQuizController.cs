@@ -56,6 +56,23 @@ namespace Qwiz.Controllers
             return Ok(new { correctAnswer = question.CorrectAnswer, quizFinished = await UpdateQuizTaken(user, quizId, question)});
         }
 
+        [HttpGet("wakeUp")]
+        [Authorize]
+        public async void SetLastActivity()
+        {
+            var user = await _um.GetUserAsync(User);
+
+            if (user != null)
+            {
+                if (user.LastActivity < DateTime.Now)
+                {
+                    Console.WriteLine("--------------------------------------------");
+                    user.LastActivity = DateTime.Now.AddMinutes(1);
+                    await _um.UpdateAsync(user);
+                }
+            }
+        }
+
         [HttpPost("create")]
         [Authorize]
         public async Task<IActionResult> CreateQuiz([FromBody] Quiz quiz)
