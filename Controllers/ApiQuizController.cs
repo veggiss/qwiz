@@ -123,6 +123,7 @@ namespace Qwiz.Controllers
         }
 
         [HttpPost("uploadImage")]
+        [Authorize]
         public async Task<IActionResult> UploadImage([FromForm] IFormFile image)
         {
             if (image == null || image.Length == 0) return BadRequest("File not selected");
