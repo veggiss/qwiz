@@ -17,23 +17,23 @@ namespace Qwiz.Data
             db.Database.EnsureCreated();
             
             var user = new ApplicationUser {FirstName = "Admin", LastName = "Boss", UserName = "user@uia.no", Email = "user@uia.no"};
-            um.CreateAsync(user, "Password1.").Wait();
-            db.SaveChanges();
+            await um.CreateAsync(user, "Password1.");
+            await db.SaveChangesAsync();
             
             var question1 = new Question("multiple_choice", "What color is grass?", "[\"a\", \"b\", \"c\", \"d\"]", "A", "hard", "");
             var question2 = new Question("true_false", "Is grass green?", null, "true", "easy", "");
             
             await db.Questions.AddRangeAsync(question1, question2);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
             
             var questions = new List<Question>() {question1, question2};
             var quiz = new Quiz(user, questions, "Category", "Topic", "Description");
 
-            await db.Quizzes.AddRangeAsync(quiz);
-            db.SaveChanges();
+            await db.Quizzes.AddAsync(quiz);
+            await db.SaveChangesAsync();
 
             // Get questions from open trivia DB API
-            for (var i = 0; i < 5; i++)
+            /*for (var i = 0; i < 5; i++)
             {
                 dynamic apiResponse = await GetRandomQuestion(5);
                 
@@ -65,7 +65,7 @@ namespace Qwiz.Data
                 
                 await db.Quizzes.AddRangeAsync(new Quiz(user, apiQuestions, "Random", "Random", "Random"));
                 db.SaveChanges();
-            }
+            }*/
         }
 
         private static async Task<object> GetRandomQuestion(int amount)

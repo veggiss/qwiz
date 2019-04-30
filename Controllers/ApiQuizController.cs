@@ -14,7 +14,6 @@ using Qwiz.Models;
 namespace Qwiz.Controllers
 {
     [Route("api")]
-    // ApiController enables automatic model validation
     [ApiController]
     public class ApiQuizController : Controller
     {
@@ -72,6 +71,54 @@ namespace Qwiz.Controllers
             user.MyQuizzes.Add(quiz);
             await _um.UpdateAsync(user);
             
+            return Ok();
+        }
+
+        [HttpPost("update")]
+        [Authorize]
+        public async Task<IActionResult> UpdateQuiz([FromBody] Quiz quizForm)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+            var quiz = await _db.Quizzes
+                .Include(q => q.Questions)
+                .FirstOrDefaultAsync(q => q.Id == quizForm.Id);
+            if (quiz == null) return BadRequest();
+            if (quiz.OwnerId != _um.GetUserId(User)) return BadRequest();
+            
+            try
+            {
+                quiz.Topic = quizForm.Topic;
+                quiz.Category  = quizForm.Category;
+                quiz.Description  = quizForm.Description;
+                quiz.ImagePath  = quizForm.ImagePath;
+                quiz.Questions = quizForm.Questions;
+                
+                await _db.SaveChangesAsync();
+            } catch (DbUpdateConcurrencyException) {
+                return BadRequest();
+            }
+            
+            return Ok();
+        }
+        
+        [HttpDelete("delete")]
+        [Authorize]
+        public async Task<IActionResult> Delete(int id)
+        {
+            Console.WriteLine("----------------------------------");
+            Console.WriteLine(id);
+            
+            var quiz = await _db.Quizzes
+                .Include(q => q.Questions)
+                .FirstOrDefaultAsync(q => q.Id == id);
+
+            if (quiz == null) return BadRequest();
+            
+            _db.Questions.RemoveRange(quiz.Questions);
+            _db.Quizzes.Remove(quiz);
+            
+            await _db.SaveChangesAsync();
+
             return Ok();
         }
 

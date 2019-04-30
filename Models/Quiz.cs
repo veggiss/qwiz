@@ -17,7 +17,8 @@ namespace Qwiz.Models
         }
         
         public int Id { get; set; }
-        private ApplicationUser Owner { get; set; }
+        public string OwnerId { get; set; }
+        public ApplicationUser Owner { get; set; }
         public List<Question> Questions { get; set; }
         public string Category { get; set; }
         public string Topic { get; set; }

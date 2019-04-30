@@ -1,5 +1,8 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Qwiz.Data;
@@ -10,10 +13,12 @@ namespace Qwiz.Controllers
     public class QuizController : Controller
     {
         private readonly ApplicationDbContext _db;
+        private readonly UserManager<ApplicationUser> _um;
         
-        public QuizController(ApplicationDbContext db)
+        public QuizController(ApplicationDbContext db, UserManager<ApplicationUser> um)
         {
             _db = db;
+            _um = um;
         }
         
         public async Task<IActionResult> Index()
@@ -40,6 +45,17 @@ namespace Qwiz.Controllers
         public IActionResult Create()
         {
             return View();
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Edit(int id)
+        {
+            Quiz quiz = await _db.Quizzes
+                .Include(q => q.Questions)
+                .FirstOrDefaultAsync(q => q.Id == id);
+            if (quiz == null) return NotFound();
+            
+            return View("../Quiz/Create", quiz);
         }
     }
 }

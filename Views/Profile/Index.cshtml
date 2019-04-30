@@ -64,6 +64,7 @@
                         <h6 class="card-title">@item.Topic</h6>
                         <h6 class="card-subtitle mb-2 text-muted">@item.Category</h6>
                         <h6 class="card-subtitle mb-2 text-muted">@item.Description</h6>
+                        <a class="badge badge-dark" asp-controller="Quiz" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
                     </div>
                 }
             </div>
