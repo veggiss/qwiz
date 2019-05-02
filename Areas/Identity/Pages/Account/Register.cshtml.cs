@@ -46,8 +46,21 @@ namespace Qwiz.Areas.Identity.Pages.Account
             public string Email { get; set; }
             
             [Required]
+            [StringLength(16, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 4)]
             [Display(Name = "Username")]
             public string UserName { get; set; }
+            
+            [Required]
+            [StringLength(64, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 2)]
+            [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Use letters only please")]
+            [Display(Name = "First name")]
+            public string FirstName { get; set; }
+            
+            [Required]
+            [StringLength(64, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 2)]
+            [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Use letters only please")]
+            [Display(Name = "Last name")]
+            public string LastName { get; set; }
 
             [Required]
             [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
@@ -73,7 +86,8 @@ namespace Qwiz.Areas.Identity.Pages.Account
             {
                 var user = new ApplicationUser
                 {
-                    UserName = Input.Email, Email = Input.Email};
+                    UserName = Input.UserName, Email = Input.Email, FirstName = Input.FirstName, LastName = Input.LastName
+                };
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
