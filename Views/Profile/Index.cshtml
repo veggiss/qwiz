@@ -37,30 +37,31 @@
    
     <div class="progress position-relative m-1" style="height: 29px;">
         <div class="progress-bar" role="progressbar"></div>
-    <h4 class="justify-content-center d-flex position-absolute w-100">
-        @xp / @xpNeeded
-    </h4>
+        <h4 class="justify-content-center d-flex position-absolute w-100">
+            @xp / @xpNeeded
+        </h4>
     </div>
-<div>
-    <ul class="nav nav-tabs" id="myTab" role="tablist">
-        <li class="nav-item">
-            <a class="nav-link active" id="history-tab" data-toggle="tab" href="#history" role="tab" aria-controls="history" aria-selected="true">History</a>
-        </li>
-            
-        <li class="nav-item">
-            <a class="nav-link" id="myquizzes-tab" data-toggle="tab" href="#myquizzes" role="tab" aria-controls="myquizzes" aria-selected="false">My Qwizzes</a>
-        </li>
-        <li>
-            <a class="nav-link" id="badges-tab" data-toggle="tab" href="#badges" role="tab" aria-controls="badges" aria-selected="false">Badges</a>
-        </li>
-    </ul>
-</div>
-
-<div class="tab-content" id="myTabContent">
-    <div class="tab-pane fade show active" id="history" role="tabpanel" aria-labelledby="history-tab">
-     <p>History</p>
+    
+    <div>
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="history-tab" data-toggle="tab" href="#history" role="tab" aria-controls="history" aria-selected="true">History</a>
+            </li>
+                
+            <li class="nav-item">
+                <a class="nav-link" id="myquizzes-tab" data-toggle="tab" href="#myquizzes" role="tab" aria-controls="myquizzes" aria-selected="false">My Qwizzes</a>
+            </li>
+            <li>
+                <a class="nav-link" id="badges-tab" data-toggle="tab" href="#badges" role="tab" aria-controls="badges" aria-selected="false">Badges</a>
+            </li>
+        </ul>
     </div>
-    <div class="tab-pane fade" id="myquizzes" role="tabpanel" aria-labelledby="myquizzes-tab">       
+    
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="history" role="tabpanel" aria-labelledby="history-tab">
+            <p>History</p>
+        </div>
+        <div class="tab-pane fade" id="myquizzes" role="tabpanel" aria-labelledby="myquizzes-tab">       
             @foreach (var item in Model.MyQuizzes)
             {
                 <div class="float-left m-1 p-2 table-active" style="border-radius: 6px; width: 10.62rem;">
@@ -70,9 +71,10 @@
                     <a class="badge badge-dark" asp-controller="Quiz" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
                 </div>
             }
-    </div>
-    <div class="tab-pane fade" id="badges" role="tabpanel" aria-labelledby="badges-tab">
-        <p>badges</p>
+        </div>
+        <div class="tab-pane fade" id="badges" role="tabpanel" aria-labelledby="badges-tab">
+            <p>badges</p>
+        </div>
     </div>
 </div>
 
