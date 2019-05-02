@@ -64,10 +64,9 @@ namespace Qwiz.Controllers
 
             if (user != null)
             {
-                if (user.LastActivity < DateTime.Now)
+                if (user.LastActivity.AddMinutes(2) < DateTime.Now)
                 {
-                    Console.WriteLine("--------------------------------------------");
-                    user.LastActivity = DateTime.Now.AddMinutes(1);
+                    user.LastActivity = DateTime.Now;
                     await _um.UpdateAsync(user);
                 }
             }

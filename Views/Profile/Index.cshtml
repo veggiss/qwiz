@@ -16,7 +16,7 @@
         <div class="col-sm">
             <div class="d-flex flex-column">
                 <img class="avatar mx-auto d-block m-2" alt="" src="https://images.immediate.co.uk/volatile/sites/4/2018/08/iStock_000044061370_Medium-fa5f8aa.jpg?quality=45&crop=5px,17px,929px,400px&resize=960,413">
-                <span class="badge badge-pill badge-light">@Model.UserName</span>
+                <span class="badge badge-pill badge-light">@Model.UserName (@Model.FirstName @Model.LastName)</span>
                 @{
                     if (online)
                     {
@@ -24,7 +24,7 @@
                     }
                     else
                     {
-                        <t class="badge badge-pill badge-danger">Offline (Last online: @Model.LastActivity)</t>
+                        <t class="badge badge-pill badge-danger">Offline (Last seen: @Model.LastActivity)</t>
                     }
                 }
             </div>

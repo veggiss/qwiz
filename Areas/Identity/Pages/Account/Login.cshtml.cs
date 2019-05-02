@@ -18,11 +18,13 @@ namespace Qwiz.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
+        private readonly UserManager<ApplicationUser> _um;
 
-        public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger, UserManager<ApplicationUser> um)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _um = um;
         }
 
         [BindProperty]
@@ -31,6 +33,8 @@ namespace Qwiz.Areas.Identity.Pages.Account
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
 
         public string ReturnUrl { get; set; }
+        
+        public static bool IsValidEmailAddress(string address) => address != null && new EmailAddressAttribute().IsValid(address);
 
         [TempData]
         public string ErrorMessage { get; set; }
@@ -38,8 +42,8 @@ namespace Qwiz.Areas.Identity.Pages.Account
         public class InputModel
         {
             [Required]
-            [EmailAddress]
-            public string Email { get; set; }
+            [Display(Name = "Username or Email")]
+            public string LoginName { get; set; }
 
             [Required]
             [DataType(DataType.Password)]
@@ -74,7 +78,10 @@ namespace Qwiz.Areas.Identity.Pages.Account
             {
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: true);
+                var isEmail = IsValidEmailAddress(Input.LoginName);
+                var username = isEmail ? (await _um.FindByEmailAsync(Input.LoginName)).UserName : Input.LoginName;
+                
+                var result = await _signInManager.PasswordSignInAsync(username, Input.Password, Input.RememberMe, lockoutOnFailure: true);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
