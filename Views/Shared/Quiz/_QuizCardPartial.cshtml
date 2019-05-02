@@ -1,18 +1,19 @@
 @model Quiz
 
-<div class="d-flex m-2">
-    <div class="card flex-fill box-shadow" style="min-width: 15em; max-width: 15em; height: 18em;">
-        <div class="card-header">
-            <h4 class="my-0 font-weight-normal">@Model.Topic</h4>
-        </div>
+
+<div class="d-flex m-2" style="min-width: 45%; max-width: 45%; height: 15em">
     
-        <div class="card-body d-flex flex-column">
-            <small class="text-muted">Category:</small>
-            <p>@Model.Category</p>
-            <small class="text-muted">Description:</small>
-            <p>@Model.Description</p>
-            <a asp-controller="Quiz" asp-action="Index" asp-route-id="@Model.Id" class="btn btn-lg btn-block btn-outline-primary mt-auto">Take quiz</a>
-        </div>
+    <div class="image-header box-shadow" style="width: 33.3%; float: left">
+        <img style="height: 100%" src=https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-UaTaWKNiBBMy2mCrFombKdgwkDMOGqj44V6cFLIweNKAqrBS >
     </div>
+    <br/>
+    <div class="card flex-fill box-shadow overflow-hidden" style="float: right; padding: 10px" align="left">
+        <h3>@Model.Topic</h3>
+        <small style="padding-bottom: 10px">Made by: @Model.Owner</small>
+        <br/>
+        <a href="#" class="badge badge-pill badge-info" style="width: 25%; padding-top: 5px; padding-bottom:5px">@Model.Category</a>
+        <p style="padding-top: 10px">@Model.Description</p>
+        <button type="button" class="btn btn-outline-info">Take Quiz</button>
+    </div>  
 </div>
 
