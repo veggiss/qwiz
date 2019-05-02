@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Qwiz.Data;
 using Qwiz.Models;
 using Microsoft.EntityFrameworkCore;
+using Qwiz.Areas.Identity.Pages.Account;
 
 namespace Qwiz.Controllers
 {
@@ -24,16 +25,21 @@ namespace Qwiz.Controllers
             _um = um;
         }
         
-        [Authorize]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string username)
         {
-            return View(await _db.Users
+            if (username == null) username = _um.GetUserName(User);
+            if (username == null) return Redirect("../Identity/Account/Login");
+            
+            var user = await _db.Users
                 .Include(u => u.QuestionsTaken)
                 .ThenInclude(u => u.Question)
                 .Include(u => u.QuizzesTaken)
                 .ThenInclude(u => u.Quiz)
                 .Include(u => u.MyQuizzes)
-                .SingleOrDefaultAsync(u => u.Id == _um.GetUserId(User)));
+                .SingleOrDefaultAsync(u => u.UserName == username);
+
+            if (user == null) return NotFound();
+            else return View(user);
         }
     }
 

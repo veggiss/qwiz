@@ -7,7 +7,13 @@ namespace Qwiz.Models
 {
     public class ApplicationUser : IdentityUser
     {
+        [Required]
+        [StringLength(64, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 2)]
+        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Use letters only please")]
         public string FirstName { get; set; }
+        [Required]
+        [StringLength(64, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 2)]
+        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Use letters only please")]
         public string LastName { get; set; }
         public int Xp { get; set; }
         public int Level { get; set; } = 1;

@@ -5,20 +5,129 @@
     <h1 class="display-4">Qwizes</h1>
 </div>
 <hr>
+
+<br>
+
+<h2>Popular Quizes</h2>
+<br>
 <div class="container">
-    <div class="row justify-content-center text-center">
-        @foreach (var item in Model)
-        {
-            Html.RenderPartial("Quiz/_QuizCardPartial", item); 
-        }
+    <div id="carouselExampleControls" class="carousel slide text-center" data-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <div class="d-flex m-2">
+                    <div class="card flex-fill box-shadow">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">Topic</h4>
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <small class="text-muted">Category:</small>
+                            <p>Category</p>
+                            <small class="text-muted">Description:</small>
+                            <p>Description</p>
+                            <a class="btn btn-lg btn-block btn-outline-primary mt-auto">Take quiz</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="carousel-item">
+                <div class="d-flex m-2">
+                    <div class="card flex-fill box-shadow">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">Topic</h4>
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <small class="text-muted">Category:</small>
+                            <p>Other stuff</p>
+                            <small class="text-muted">Description:</small>
+                            <p>Awesome</p>
+                            <a class="btn btn-lg btn-block btn-outline-primary mt-auto">Take quiz</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="carousel-item">
+                <div class="d-flex m-2">
+                    <div class="card flex-fill box-shadow">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">Topic</h4>
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <small class="text-muted">Category:</small>
+                            <p>New stuff</p>
+                            <small class="text-muted">Description:</small>
+                            <p>Splendid</p>
+                            <a class="btn btn-lg btn-block btn-outline-primary mt-auto">Take quiz</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <a class="carousel-control-prev" href="#carouselExampleControls" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#carouselExampleControls" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+        </a>
     </div>
 </div>
+
+<br>
+
+
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link active" data-toggle="tab" href="#popular">Quizzes of the week</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#top10">Top 10</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#Categories">Categories</a>
+    </li>
+    
+    <li class="nav-item ml-auto">
+        <input class="form-control mr-sm-1" type="search" placeholder="Search" aria-label="Search">
+    </li>
+</ul>
+
+<br>
+    
+<div id="myTabContent" class="tab-content">
+    <div class="tab-pane fade active show" id="popular">
+        <p>Quizzes of the week</p>
+    </div>
+    
+    <div class="tab-pane fade" id="top10">
+        <p> Top 10 quizzes of all time</p>
+    </div>
+    
+    <div class="tab-pane fade" id="Categories">
+        <p>Categories</p>
+    </div>
+</div>
+
+
+<br>
+
 
 @section Scripts
 {
     <script>
-        axios.get(`/api/getUser?id=1`).then(function(response) {
-            console.log(response);
+        $(document).ready(function () {
+            let carousel = $('.carousel').carousel();
+            console.log(carousel.wrap, carousel.interval, carousel);
+            carousel.wrap = false;
         });
+
     </script>
+    
 }
+
