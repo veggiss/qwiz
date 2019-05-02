@@ -93,51 +93,34 @@
         <a class="nav-link" data-toggle="tab" href="#Categories">Categories</a>
     </li>
     
- 
-  <form class="form-inline">
-        <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-        <button class="btn btn-clear my-2 my-sm-0" type="submit">Search</button>
-    </form>
+    <li class="nav-item ml-auto">
+        <input class="form-control mr-sm-1" type="search" placeholder="Search" aria-label="Search">
+    </li>
 </ul>
 
+<br>
+
+<div class="form-group">
+    
 <div id="myTabContent" class="tab-content">
+    
     <div class="tab-pane fade active show" id="popular">
-        
+        <p>Quizzes of the week</p>
+
     </div>
+    
     <div class="tab-pane fade" id="top10">
-        <p> Top 10 quizes of all time</p>
+        <p> Top 10 quizzes of all time</p>
     </div>
-    <div class="tab-pane fade" id="dropdown1">
-        <p>Etsy mixtape wayfarers, ethical wes anderson tofu before they sold out mcsweeney's organic lomo retro fanny pack lo-fi farm-to-table readymade. Messenger bag gentrify pitchfork tattooed craft beer, iphone skateboard locavore carles etsy salvia banksy hoodie helvetica. DIY synth PBR banksy irony. Leggings gentrify squid 8-bit cred pitchfork.</p>
+    
+    <div class="tab-pane fade" id="Categories">
+        <p>Categories</p>
     </div>
-    <div class="tab-pane fade" id="dropdown2">
-        <p>Trust fund seitan letterpress, keytar raw denim keffiyeh etsy art party before they sold out master cleanse gluten-free squid scenester freegan cosby sweater. Fanny pack portland seitan DIY, art party locavore wolf cliche high life echo park Austin. Cred vinyl keffiyeh DIY salvia PBR, banh mi before they sold out farm-to-table VHS viral locavore cosby sweater.</p>
+
     </div>
 </div>
 
 <br>
-<!--    
-    <div class="row justify-content-center text-center">
-        @foreach (var item in Model)
-        {
-            <div class="d-flex m-2">
-                <div class="card flex-fill box-shadow" style="min-width: 15em; max-width: 15em; height: 18em;">
-                    <div class="card-header">
-                        <h4 class="my-0 font-weight-normal">@item.Topic</h4>
-                    </div>
-
-                    <div class="card-body d-flex flex-column">
-                        <small class="text-muted">Category:</small>
-                        <p>@item.Category</p>
-                        <small class="text-muted">Description:</small>
-                        <p>@item.Description</p>
-                        <a asp-action="Play" asp-route-id="@item.Id" class="btn btn-lg btn-block btn-outline-primary mt-auto">Take quiz</a>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
- -->
 
 
 @section Scripts
@@ -148,7 +131,6 @@
             console.log(carousel.wrap, carousel.interval, carousel);
             carousel.wrap = false;
         });
-
     </script>
-    
 }
+
