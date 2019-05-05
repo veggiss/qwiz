@@ -25,10 +25,18 @@
                      <label>Category</label>
                      <input id="quizCategory" type="text" class="form-control" required>
                  </div>
-                 <div class="form-group">
-                     <label>Description</label>
-                     <input id="quizDescription" type="text" class="form-control" required>
-                 </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input id="quizDescription" type="text" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Quiz Difficulty</label>
+                    <select id="quizDifficulty" class="form-control">
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>
@@ -172,6 +180,7 @@
                         category: $("#quizCategory").val(),
                         description: $("#quizDescription").val(),
                         imagePath: $("#quizImgPrev").attr('src'),
+                        difficulty: $("#quizDifficulty").children("option:selected").val(),
                         questions: []
                     };
 

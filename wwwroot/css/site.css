@@ -68,3 +68,9 @@ body {
   object-fit: cover;
 }
 
+.quizAvatar {
+  vertical-align: middle;
+  width: 186px;
+  height: 150px;
+  object-fit: cover;
+}

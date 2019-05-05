@@ -1,11 +1,18 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.SpaServices.Prerendering;
 using Microsoft.EntityFrameworkCore;
 using Qwiz.Data;
 using Qwiz.Models;
@@ -33,6 +40,44 @@ namespace Qwiz.Controllers
 
             return Ok(user);
         }
+
+        [HttpGet("getQuizList")]
+        public async Task<IActionResult> GetMyQuizzes(string username, int page, int size, string type)
+        {
+            if (page < 1 || size > 20 || username == null || type == null) return BadRequest();
+
+            if (type == "history")
+            {
+                var query = _um.Users
+                    .Where(u => u.UserName == username)
+                    .SelectMany(q => q.QuizzesTaken)
+                    .Include(q => q.Quiz)
+                    .ThenInclude(q => q.Questions)
+                    .Include(q => q.Quiz)
+                    .ThenInclude(q => q.Owner).ToList();
+                
+                var entries = query.Skip((page - 1) * size).Take(size).ToList();
+                Console.WriteLine("-----------------------------");
+                Console.WriteLine(entries.Count);
+                
+                var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
+                return PartialView("Profile/_HistoryCardPartial", new HistoryCardModel(entries, totalPages));
+            } 
+            
+            if (type == "quizzesBy")
+            {
+                var query = _db.Quizzes
+                    .Include(q => q.Owner)
+                    .Where(q => q.Owner.UserName == username).ToList();
+                
+                var partialString = await _um.GetUserAsync(User) != null ? "Profile/_MyQuizPartial" : "Quiz/_QuizCardPartial";
+                var entries = query.Skip((page - 1) * size).Take(size).ToList();
+                var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
+                return PartialView(partialString, new QuizCardModel(entries, totalPages));
+            }
+
+            return null;
+        }
         
         // api/answer?id=1&guess=A
         [HttpGet("answer")]
@@ -44,6 +89,7 @@ namespace Qwiz.Controllers
             var user = await _db.Users
                 .Include(u => u.QuestionsTaken)
                 .Include(u => u.QuizzesTaken)
+                .ThenInclude(q => q.Quiz)
                 .SingleOrDefaultAsync(u => u.Id == _um.GetUserId(User));
 
             if (user.QuestionsTaken.Find(q => q.Question == question) == null)
@@ -121,14 +167,33 @@ namespace Qwiz.Controllers
         [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
-            Console.WriteLine("----------------------------------");
-            Console.WriteLine(id);
+            // TODO: Fix relation for quizzes and questions taken
+            var user = await _db.Users
+                .Include(u => u.QuestionsTaken)
+                .ThenInclude(u => u.Question)
+                .Include(u => u.QuizzesTaken)
+                .ThenInclude(q => q.Quiz)
+                .SingleOrDefaultAsync(u => u.Id == _um.GetUserId(User));
+
+            if (user == null) return BadRequest();
             
             var quiz = await _db.Quizzes
                 .Include(q => q.Questions)
-                .FirstOrDefaultAsync(q => q.Id == id);
+                .Include(q => q.Owner)
+                .FirstOrDefaultAsync(q => q.Id == id && q.Owner == user);
 
             if (quiz == null) return BadRequest();
+
+            var quizTaken = user.QuizzesTaken.Find(q => q.Quiz == quiz);
+            user.QuizzesTaken.Remove(quizTaken);
+
+            foreach (var question in quiz.Questions)
+            {
+                var questionTaken = user.QuestionsTaken.Find(q => q.Question == question);
+                user.QuestionsTaken.Remove(questionTaken);
+            }
+            
+            await _um.UpdateAsync(user);
             
             _db.Questions.RemoveRange(quiz.Questions);
             _db.Quizzes.Remove(quiz);
@@ -189,7 +254,7 @@ namespace Qwiz.Controllers
             await _um.UpdateAsync(user);
         }
 
-        // This operation might be too complex, another option might be to add corresponding quiz to each question on creation.
+        // TODO: This operation might be too complex, another option might be to add corresponding quiz to each question on creation.
         private async Task<bool> UpdateQuizTaken(ApplicationUser user, int id, Question question)
         {
             Quiz quiz = await _db.Quizzes
@@ -197,8 +262,8 @@ namespace Qwiz.Controllers
                 .FirstOrDefaultAsync(i => i.Id == id);
 
             if (quiz == null) return false;
-            if (!quiz.Questions.Contains(question)) return false;
-            if (user.QuizzesTaken.Find(q => q.Quiz == quiz) != null) return false;
+            if (!quiz.Questions.Exists(q => q == question)) return false;
+            if (user.QuizzesTaken.Exists(q => q.Quiz == quiz)) return false;
 
             var correctAnswers = 0;
             var score = 0;
@@ -212,6 +277,7 @@ namespace Qwiz.Controllers
             }
             
             user.QuizzesTaken.Add(new QuizTaken(quiz, correctAnswers, score));
+            user.QuizzesTakenCount++;
             await _um.UpdateAsync(user);
                 
             return true;
