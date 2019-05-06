@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Qwiz.Controllers;
 using Qwiz.Models;
 
 namespace Qwiz.Data
@@ -45,8 +46,8 @@ namespace Qwiz.Data
                     string text = System.Web.HttpUtility.HtmlDecode((string) q.question);
                     string qType = q.type;
                     string qDifficulty = q.difficulty;
-                    
                     Question question;
+                    
                     if (qType == "multiple") {
                         string alt = "[\"" + q.correct_answer + "\",\"" + q.incorrect_answers[0] + "\",\"" + q.incorrect_answers[1] + "\",\"" + q.incorrect_answers[2] + "\"]";
                         question = new Question("multiple_choice", text, alt, "A", qDifficulty, "");
@@ -61,15 +62,16 @@ namespace Qwiz.Data
                     await db.Questions.AddRangeAsync(question);
                     db.SaveChanges();
                 }
-                
-                string randomName = Path.GetRandomFileName();
-                randomName = randomName.Replace(".", "");
+
+                var ran = new Random();
+                string randomName = Path.GetRandomFileName().Replace(".", "");
+                string category = System.Web.HttpUtility.HtmlDecode(ApiQuizController.CategoryFromIndex(ran.Next(0, 23)));
                 dynamic randomImage = await GetObjectFromApi("http://www.splashbase.co/", "api/v1/images/random");
 
-                var quiz = new Quiz(user, apiQuestions, "Random", randomName, "Description", "easy");
+                var quiz = new Quiz(user, apiQuestions, category, randomName, "Description", "easy");
                 quiz.ImagePath = randomImage.url;
-                quiz.Upvotes = new Random().Next(0, 500);
-                quiz.Views = new Random().Next(0, 50000);
+                quiz.Upvotes = ran.Next(0, 500);
+                quiz.Views = ran.Next(0, 50000);
                 await db.Quizzes.AddRangeAsync(quiz);
                 db.SaveChanges();
             }

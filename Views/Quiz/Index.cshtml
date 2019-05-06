@@ -40,38 +40,85 @@
 
 <ul class="nav nav-tabs">
     <li class="nav-item">
-        <a class="nav-link active" data-toggle="tab" href="#popular">Quizzes of the week</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" data-toggle="tab" href="#top100">Top 100</a>
-    </li>
-    
-    <li class="nav-item">
-        <a class="nav-link" data-toggle="tab" href="#Categories">Categories</a>
-    </li>
-    
-    <li class="nav-item ml-auto">
-        <input class="form-control mr-sm-1" type="search" placeholder="Search" aria-label="Search">
+        <a class="nav-link" data-toggle="tab" href="#categories">Categories</a>
     </li>
 </ul>
 
 <br>
     
 <div id="tabContent" class="tab-content">
-    <div class="tab-pane fade active show" id="popular">
-        <p>Quizzes of the week</p>
-    </div>
-    
-    <div class="tab-pane fade" id="top100">
-        <div class="w-100 d-flex justify-content-center">
-            <div id="top100List" style="width: 996px;"></div>
+    <div class="tab-pane fade active show" id="categories">
+        <div class="w-100">
+            <div>
+                <div class="form-row">
+                    <div class="col form-group">
+                        <label>Difficulty:</label>
+                        <select class="form-control onChangeCallback" id="difficultySelect">
+                            <option>Any Difficulty</option>
+                            <option value="easy">Easy</option>
+                            <option value="medium">Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+
+                    <div class="col form-group">
+                        <label>Category:</label>
+                        <select class="form-control onChangeCallback" id="categorySelect">
+                        	<option>Any Category</option>
+                            <option value="0">General Knowledge</option>
+                            <option value="1">Entertainment: Books</option>
+                            <option value="2">Entertainment: Film</option>
+                            <option value="3">Entertainment: Music</option>
+                            <option value="4">Entertainment: Musicals &amp; Theatres</option>
+                            <option value="5">Entertainment: Television</option>
+                            <option value="6">Entertainment: Video Games</option>
+                            <option value="7">Entertainment: Board Games</option>
+                            <option value="8">Science &amp; Nature</option>
+                            <option value="9">Science: Computers</option>
+                            <option value="10">Science: Mathematics</option>
+                            <option value="11">Mythology</option>
+                            <option value="12">Sports</option>
+                            <option value="13">Geography</option>
+                            <option value="14">History</option>
+                            <option value="15">Politics</option>
+                            <option value="16">Art</option>
+                            <option value="17">Celebrities</option>
+                            <option value="18">Animals</option>
+                            <option value="19">Vehicles</option>
+                            <option value="20">Entertainment: Comics</option>
+                            <option value="21">Science: Gadgets</option>
+                            <option value="22">Entertainment: Japanese Anime &amp; Manga</option>
+                            <option value="23">Entertainment: Cartoon &amp; Animations</option>		
+                        </select>
+                    </div>
+                    
+                    <div class="col form-group">
+                        <label>Order by:</label>
+                        <select class="form-control onChangeCallback" id="orderBySelect">
+                            <option value="views">Views</option>
+                            <option value="upvotes">Upvotes</option>
+                            <option value="recent">Recent</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col form-group">
+                        <label>Search:</label>
+                        <input class="form-control" type="search" placeholder="Search" aria-label="Search">
+                    </div>
+                </div>
+            </div>
         </div>
-        <template id="top100Paginate">
+        
+        <div class="w-100 d-flex justify-content-center">
+            <div id="categoriesList" style="width: 996px;"></div>
+        </div>
+        
+        <template>
             <paginate class="w-100 d-flex justify-content-center"
-                      :page-count="top100PageCount"
+                      :page-count="categoriesPageCount"
                       :page-range="5"
                       :margin-pages="0"
-                      :click-handler="top100Callback"
+                      :click-handler="categoriesCallback"
                       :prev-text="'Prev'"
                       :next-text="'Next'"
                       :container-class="'pagination'"
@@ -83,10 +130,6 @@
                       :first-last-button="true">
             </paginate>
         </template>
-    </div>
-    
-    <div class="tab-pane fade" id="Categories">
-        <p>Categories</p>
     </div>
 </div>
 
@@ -101,23 +144,44 @@
             $('.carousel').carousel();
             
             let size = 6;
-            let apiUrl = (path, page, size, type) => `${path}?username=null&page=${page}&size=${size}&type=${type}`;
+            let apiUrl = (path, obj) => {
+                let url = path + '?';
+                let s = '';
+                
+                obj.forEach((item, key) => {
+                    if (item !== undefined || item !== undefined) url += `${s + key}=${item}`;
+                    s = '&';
+                });
+                
+                return url;
+            };
             
+            // tring username, int page, int size, string type, int categoryIndex, string difficulty, string orderBy
             Vue.component('paginate', VuejsPaginate);
             let app = new Vue({
                 el: '#tabContent',
                 data: {
-                    top100PageCount: 1
+                    categoriesPageCount: 1,
                 },
                 mounted: function() {
-                    this.top100Callback(1);
+                    this.categoriesCallback(1);
+                    
+                    $(".onChangeCallback").change(() => this.categoriesCallback(1));
                 },
                 methods: {
-                    top100Callback: function(page) {
+                    categoriesCallback: function(page) {
                         let self = this;
-                        axios.get(apiUrl('/api/getQuizList', page, size, 'top100')).then(function(response) {
-                            let pageCount = self.renderList('#top100List', response.data);
-                            if (pageCount > 1) self.top100PageCount = pageCount;
+                        
+                        axios.get(apiUrl('/api/getQuizList', {
+                            page: page,
+                            size: size,
+                            type: 'category',
+                            difficulty: $("#difficultySelect option:selected").attr("value"),
+                            categoryIndex: $("#categorySelect option:selected").attr("value"),
+                            orderBy: $("#orderBySelect option:selected").attr("value"),
+                        })).then(function(response) {
+                            let pageCount = self.renderList('#categoriesList', response.data);
+                            if (pageCount > 1) self.categoriesPageCount = pageCount;
                         });
                     },
                     

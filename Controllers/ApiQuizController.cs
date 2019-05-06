@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -42,7 +43,7 @@ namespace Qwiz.Controllers
         }
 
         [HttpGet("getQuizList")]
-        public async Task<IActionResult> GetQuizList(string username, int page, int size, string type)
+        public async Task<IActionResult> GetQuizList(string username, int page, int size, string type, int? categoryIndex, string difficulty, string orderBy)
         {
             if (page < 1 || size > 20) return BadRequest();
 
@@ -58,6 +59,7 @@ namespace Qwiz.Controllers
                 
                 var entries = query.Skip((page - 1) * size).Take(size).ToList();
                 var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
+                
                 return PartialView("Profile/_HistoryCardPartial", new HistoryCardModel(entries, totalPages));
             } 
             
@@ -70,6 +72,7 @@ namespace Qwiz.Controllers
                 var partialString = await _um.GetUserAsync(User) != null ? "Profile/_MyQuizPartial" : "Quiz/_QuizCardPartial";
                 var entries = query.Skip((page - 1) * size).Take(size).ToList();
                 var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
+                
                 return PartialView(partialString, new QuizCardModel(entries, totalPages));
             }
 
@@ -86,10 +89,33 @@ namespace Qwiz.Controllers
                 return PartialView("Quiz/_QuizCardPartial", new QuizCardModel(entries, totalPages));
             }
 
+            if (type == "category")
+            {
+                var category =  CategoryFromIndex(categoryIndex);
+                var query = await _db.Quizzes.Include(q => q.Owner).ToListAsync();
+
+                if (category != null) 
+                    query = query.Where(q => q.Category == category).ToList();
+                
+                if (difficulty != null) 
+                    query = query.Where(q => q.Difficulty == difficulty).ToList();
+                
+                if (orderBy != null)
+                {
+                    if (orderBy == "views") query = query.OrderByDescending(q => q.Views).ToList();
+                    if (orderBy == "upvotes") query = query.OrderByDescending(q => q.Upvotes).ToList();
+                    if (orderBy == "recent") query = query.OrderBy(q => q.CreationDate).ToList();
+                }
+                
+                var entries = query.Skip((page - 1) * size).Take(size).ToList();
+                var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
+                
+                return PartialView("Quiz/_QuizCardPartial", new QuizCardModel(entries, totalPages));
+            }
+
             return null;
         }
         
-        // api/answer?id=1&guess=A
         [HttpGet("answer")]
         [Authorize]
         public async Task<IActionResult> CheckAnswer(int quizId, int questionId, string guess)
@@ -111,7 +137,8 @@ namespace Qwiz.Controllers
             
             return Ok(new { correctAnswer = question.CorrectAnswer, quizFinished = await UpdateQuizTaken(user, quizId, question)});
         }
-
+        
+        // TODO: Change to a websocket solution?
         [HttpGet("wakeUp")]
         [Authorize]
         public async void SetLastActivity()
@@ -291,6 +318,41 @@ namespace Qwiz.Controllers
             await _um.UpdateAsync(user);
                 
             return true;
+        }
+
+        public static string CategoryFromIndex(int? id)
+        {
+            if (id == null || id < 0 || id > 23) return null;
+            
+            string[] category =
+            {
+                "General Knowledge",                     //0
+                "Entertainment: Books",                  //1
+                "Entertainment: Film",                   //2
+                "Entertainment: Music",                  //3
+                "Entertainment: Musicals & Theatres",    //4
+                "Entertainment: Television",             //5
+                "Entertainment: Video Games",            //6
+                "Entertainment: Board Games",            //7
+                "Science &amp; Nature",                  //8
+                "Science: Computers",                    //9
+                "Science: Mathematics",                  //10
+                "Mythology",                             //11
+                "Sports",                                //12
+                "Geography",                             //13
+                "History",                               //14
+                "Politics",                              //15
+                "Art",                                   //16
+                "Celebrities",                           //17
+                "Animals",                               //18
+                "Vehicles",                              //19
+                "Entertainment: Comics",                 //20
+                "Science: Gadgets",                      //21
+                "Entertainment: Japanese Anime & Manga", //22
+                "Entertainment: Cartoon & Animations"    //23
+            };
+
+            return category[(int) id];
         }
     }
 }
