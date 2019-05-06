@@ -2,47 +2,48 @@
     ViewData["Title"] = "Home Page";
 }
 
+
 <div class="jumbotron">
-  <h1 class="display-3">Qwiz</h1>
-  <p class="lead">The app "Qwiz" is created to be a educational tool to be used in high school and higher education.</p>
-  <hr class="my-4">
-  <p class="text-warning"><a href="Identity/Account/Login"><strong>Sign in </strong></a>now and make your own quizzes to challenge your friends.</p>
-</div>
-
-
-<ul class="nav nav-tabs">
-  <li class="nav-item">
-    <a class="nav-link active" data-toggle="tab" href="#popular">Quizzes of the week</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" data-toggle="tab" href="#top10">Top 10</a>
-  </li>
-  <li class="nav-item dropdown">
-    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Categories</a>
-    <div class="dropdown-menu" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, 42px, 0px); top: 0px; left: 0px; will-change: transform;">
-      <a class="dropdown-item" href="#">Geography</a>
-      <a class="dropdown-item" href="#">History</a>
-      <a class="dropdown-item" href="#">Language</a>
-      <div class="dropdown-divider"></div>
-      <a class="dropdown-item" href="Quiz">See all</a>
+  <div class="col-sm">
+    <div class="d-flex flex-column">
+      <div id="Logocircle">
+        <img class="logo mx-auto d-block m-2" alt="" src="images/logo_transparent.png">
+      </div>
+      <br>
     </div>
-  </li>
-</ul>
-<div id="myTabContent" class="tab-content">
-  <div class="tab-pane fade active show" id="popular">
-    <p>Most popular quizes taken today.</p>
-  </div>
-  <div class="tab-pane fade" id="top10">
-    <p> Top 10 quizes of all time</p>
-  </div>
-  <div class="tab-pane fade" id="dropdown1">
-    <p>Etsy mixtape wayfarers, ethical wes anderson tofu before they sold out mcsweeney's organic lomo retro fanny pack lo-fi farm-to-table readymade. Messenger bag gentrify pitchfork tattooed craft beer, iphone skateboard locavore carles etsy salvia banksy hoodie helvetica. DIY synth PBR banksy irony. Leggings gentrify squid 8-bit cred pitchfork.</p>
-  </div>
-  <div class="tab-pane fade" id="dropdown2">
-    <p>Trust fund seitan letterpress, keytar raw denim keffiyeh etsy art party before they sold out master cleanse gluten-free squid scenester freegan cosby sweater. Fanny pack portland seitan DIY, art party locavore wolf cliche high life echo park Austin. Cred vinyl keffiyeh DIY salvia PBR, banh mi before they sold out farm-to-table VHS viral locavore cosby sweater.</p>
+    <p class="lead" style="text-align: center">Take and make quizzes for education or just for fun! Make a profile <strong>today</strong> and start your qwiz-journey.</p>
+    <hr class="my-4">
+    <p class="lead">
+      <div id="buttons" style="text-align: center">
+        <a class="btn btn-info btn-lg" href="Identity/Account/Login" role="button">Log in</a>
+        <a class="btn btn-success btn-lg" href="Quiz" role="button">Play</a>
+      </div>
+    </p>
   </div>
 </div>
 
-<br>
 
+<br></br>
+
+<div id="info2" >
+  
+  <h2>Perfect for studying!</h2>
+  <p> Qwiz is created to be an educational tool to be used in high school and higher education.
+    As a student you can also revise your learning by taking quizzes specifically made for the subjects you are learning at the time. 
+    You can also make your own customized quiz and share it with your classmates.</p>
+  
+</div>
+
+<br></br>
+<hr></hr>
+<br></br>
+
+<div id="info" >
+  
+  <h2>How to become a Qwiz-master</h2>
+  <p> By making a profile on qwiz you are able to collect XP for every quiz you take. When you overcome levels and goals you receive 
+    badges. On your profile page you can follow your progress on a progress bar.
+  
+  
+</div>
 
