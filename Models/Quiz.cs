@@ -34,6 +34,8 @@ namespace Qwiz.Models
         [Required]
         [RegularExpression("^(easy|medium|hard)$", ErrorMessage = "Difficulty type not accepted")]
         public string Difficulty { get; set; }
+        public int Upvotes { get; set; }
+        public int Views { get; set; }
         public DateTime CreationDate { get; set; } = DateTime.Now;
     }
 }

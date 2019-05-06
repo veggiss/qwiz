@@ -42,11 +42,11 @@ namespace Qwiz.Controllers
         }
 
         [HttpGet("getQuizList")]
-        public async Task<IActionResult> GetMyQuizzes(string username, int page, int size, string type)
+        public async Task<IActionResult> GetQuizList(string username, int page, int size, string type)
         {
-            if (page < 1 || size > 20 || username == null || type == null) return BadRequest();
+            if (page < 1 || size > 20) return BadRequest();
 
-            if (type == "history")
+            if (type == "history" && username != null)
             {
                 var query = _um.Users
                     .Where(u => u.UserName == username)
@@ -57,14 +57,11 @@ namespace Qwiz.Controllers
                     .ThenInclude(q => q.Owner).ToList();
                 
                 var entries = query.Skip((page - 1) * size).Take(size).ToList();
-                Console.WriteLine("-----------------------------");
-                Console.WriteLine(entries.Count);
-                
                 var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
                 return PartialView("Profile/_HistoryCardPartial", new HistoryCardModel(entries, totalPages));
             } 
             
-            if (type == "quizzesBy")
+            if (type == "quizzesBy" && username != null)
             {
                 var query = _db.Quizzes
                     .Include(q => q.Owner)
@@ -74,6 +71,19 @@ namespace Qwiz.Controllers
                 var entries = query.Skip((page - 1) * size).Take(size).ToList();
                 var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
                 return PartialView(partialString, new QuizCardModel(entries, totalPages));
+            }
+
+            if (type == "top100")
+            {
+                var query = _db.Quizzes
+                    .Take(100)
+                    .Include(q => q.Owner)
+                    .OrderByDescending(q => q.Upvotes).ToList();
+                
+                var entries = query.Skip((page - 1) * size).Take(size).ToList();
+                var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
+                
+                return PartialView("Quiz/_QuizCardPartial", new QuizCardModel(entries, totalPages));
             }
 
             return null;

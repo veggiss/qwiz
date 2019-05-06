@@ -56,66 +56,72 @@
         </ul>
     </div>
     
-    <div class="tab-content" id="tabContent">
+    <div class="tab-content justify-content-center" id="tabContent">
         <div class="tab-pane fade show active" id="history" role="tabpanel" aria-labelledby="history-tab">
-            <div id="historyList"></div>
-            <template  id="historyPaginate">
+            <div class="w-100 d-flex justify-content-center">
+                <div id="historyList" style="width: 996px;"></div>
+            </div>
+            <template id="historyPaginate">
                 <paginate class="w-100 d-flex justify-content-center"
-                    :page-count="historyPageCount"
-                    :page-range="5"
-                    :margin-pages="0"
-                    :click-handler="historyCallback"
-                    :prev-text="'Prev'"
-                    :next-text="'Next'"
-                    :container-class="'pagination'"
-                    :page-class="'page-item'"
-                    :page-link-class="'page-link'"
-                    :next-link-class="'page-link'"
-                    :prev-link-class="'page-link'"
-                    :no-li-surround="false"
-                    :first-last-button="true">
+                          :page-count="historyPageCount"
+                          :page-range="5"
+                          :margin-pages="0"
+                          :click-handler="historyCallback"
+                          :prev-text="'Prev'"
+                          :next-text="'Next'"
+                          :container-class="'pagination'"
+                          :page-class="'page-item'"
+                          :page-link-class="'page-link'"
+                          :next-link-class="'page-link'"
+                          :prev-link-class="'page-link'"
+                          :no-li-surround="false"
+                          :first-last-button="true">
                 </paginate>
             </template>
         </div>
         
         <div class="tab-pane fade" id="myQuizzes" role="tabpanel" aria-labelledby="myQuizzes-tab">
-            <div id="myQuizzesList"></div>
+            <div class="w-100 d-flex justify-content-center">
+                <div id="myQuizzesList" style="width: 996px;"></div>
+            </div>
             <template>
                 <paginate class="w-100 d-flex justify-content-center"
-                    :page-count="myQuizzesPageCount"
-                    :page-range="5"
-                    :margin-pages="0"
-                    :click-handler="myQuizzesCallback"
-                    :prev-text="'Prev'"
-                    :next-text="'Next'"
-                    :container-class="'pagination'"
-                    :page-class="'page-item'"
-                    :page-link-class="'page-link'"
-                    :next-link-class="'page-link'"
-                    :prev-link-class="'page-link'"
-                    :no-li-surround="false"
-                    :first-last-button="true">
+                          :page-count="myQuizzesPageCount"
+                          :page-range="5"
+                          :margin-pages="0"
+                          :click-handler="myQuizzesCallback"
+                          :prev-text="'Prev'"
+                          :next-text="'Next'"
+                          :container-class="'pagination'"
+                          :page-class="'page-item'"
+                          :page-link-class="'page-link'"
+                          :next-link-class="'page-link'"
+                          :prev-link-class="'page-link'"
+                          :no-li-surround="false"
+                          :first-last-button="true">
                 </paginate>
             </template>
         </div>
         
         <div class="tab-pane fade" id="badges" role="tabpanel" aria-labelledby="badges-tab">
-            <div id="badgesList"></div>
+            <div class="w-100 d-flex justify-content-center">
+                <div id="badgesList" style="width: 996px;"></div>
+            </div>
             <template id="badgesPaginate">
                 <paginate class="w-100 d-flex justify-content-center"
-                    :page-count="badgesPageCount"
-                    :page-range="5"
-                    :margin-pages="0"
-                    :click-handler="badgesCallback"
-                    :prev-text="'Prev'"
-                    :next-text="'Next'"
-                    :container-class="'pagination'"
-                    :page-class="'page-item'"
-                    :page-link-class="'page-link'"
-                    :next-link-class="'page-link'"
-                    :prev-link-class="'page-link'"
-                    :no-li-surround="false"
-                    :first-last-button="true">
+                          :page-count="badgesPageCount"
+                          :page-range="5"
+                          :margin-pages="0"
+                          :click-handler="badgesCallback"
+                          :prev-text="'Prev'"
+                          :next-text="'Next'"
+                          :container-class="'pagination'"
+                          :page-class="'page-item'"
+                          :page-link-class="'page-link'"
+                          :next-link-class="'page-link'"
+                          :prev-link-class="'page-link'"
+                          :no-li-surround="false"
+                          :first-last-button="true">
                 </paginate>
             </template>
         </div>

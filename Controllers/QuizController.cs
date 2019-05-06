@@ -23,7 +23,9 @@ namespace Qwiz.Controllers
         
         public async Task<IActionResult> Index()
         {
-            var quizzes = _db.Quizzes;
+            var quizzes = _db.Quizzes
+                .Include(q => q.Owner)
+                .Skip(0).Take(3);
             
             return View(await quizzes.ToListAsync());
         }
