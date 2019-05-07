@@ -74,3 +74,20 @@ body {
   height: 150px;
   object-fit: cover;
 }
+
+.logo {
+  vertical-align: middle;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+#Logocircle {
+  position: relative;
+  background-color: #2E3E4E;
+  margin: 20px auto;
+  width: 300px;
+  height: 300px;
+  border-radius: 200px;
+}
