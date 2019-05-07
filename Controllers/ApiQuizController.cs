@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Html;
@@ -43,7 +44,7 @@ namespace Qwiz.Controllers
         }
 
         [HttpGet("getQuizList")]
-        public async Task<IActionResult> GetQuizList(string username, int page, int size, string type, int? categoryIndex, string difficulty, string orderBy)
+        public async Task<IActionResult> GetQuizList(string username, int page, int size, string type, int? categoryIndex, string difficulty, string orderBy, string search)
         {
             if (page < 1 || size > 20) return BadRequest();
 
@@ -61,7 +62,7 @@ namespace Qwiz.Controllers
                 var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
                 
                 return PartialView("Profile/_HistoryCardPartial", new HistoryCardModel(entries, totalPages));
-            } 
+            }
             
             if (type == "quizzesBy" && username != null)
             {
@@ -76,19 +77,6 @@ namespace Qwiz.Controllers
                 return PartialView(partialString, new QuizCardModel(entries, totalPages));
             }
 
-            if (type == "top100")
-            {
-                var query = _db.Quizzes
-                    .Take(100)
-                    .Include(q => q.Owner)
-                    .OrderByDescending(q => q.Upvotes).ToList();
-                
-                var entries = query.Skip((page - 1) * size).Take(size).ToList();
-                var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
-                
-                return PartialView("Quiz/_QuizCardPartial", new QuizCardModel(entries, totalPages));
-            }
-
             if (type == "category")
             {
                 var category =  CategoryFromIndex(categoryIndex);
@@ -100,11 +88,27 @@ namespace Qwiz.Controllers
                 if (difficulty != null) 
                     query = query.Where(q => q.Difficulty == difficulty).ToList();
                 
+                if (search != null)
+                {
+                    var searchArr = Regex.Split(search.ToLower(), @"\s+").Where(s => s != string.Empty);
+                    var queryTopic = query.Where(q => searchArr.Any(q.Topic.ToLower().Contains)).ToList();
+                    var queryUserName = query.Where(q => searchArr.Any(q.Owner.UserName.ToLower().Contains)).ToList();
+                    var queryDescription = query.Where(q => searchArr.Any(q.Description.ToLower().Contains)).ToList();
+                    var queryCategory = query.Where(q => searchArr.Any(q.Category.ToLower().Contains)).ToList();
+
+                    List<Quiz> searchList = new List<Quiz>();
+                    searchList.AddRange(queryTopic);
+                    searchList.AddRange(queryUserName);
+                    searchList.AddRange(queryDescription);
+                    searchList.AddRange(queryCategory);
+                    query = searchList.Distinct().ToList();
+                }
+                
                 if (orderBy != null)
                 {
                     if (orderBy == "views") query = query.OrderByDescending(q => q.Views).ToList();
                     if (orderBy == "upvotes") query = query.OrderByDescending(q => q.Upvotes).ToList();
-                    if (orderBy == "recent") query = query.OrderBy(q => q.CreationDate).ToList();
+                    if (orderBy == "recent") query = query.OrderByDescending(q => q.CreationDate).ToList();
                 }
                 
                 var entries = query.Skip((page - 1) * size).Take(size).ToList();

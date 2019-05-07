@@ -102,8 +102,13 @@
                     </div>
                     
                     <div class="col form-group">
-                        <label>Search:</label>
-                        <input class="form-control" type="search" placeholder="Search" aria-label="Search">
+                        <label>&nbsp;</label>
+                        <div class="input-group mb-2">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text"><i class="material-icons">search</i></div>
+                            </div>
+                            <input id="searchInput" class="form-control" type="search" placeholder="Search" aria-label="Search">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -152,9 +157,10 @@
                     if (item !== undefined || item !== undefined) url += `${s + key}=${item}`;
                     s = '&';
                 });
-                
+                console.log(url);
                 return url;
             };
+            let getSearchText = s => s.trim().length === 0 ? undefined : s;
             
             // tring username, int page, int size, string type, int categoryIndex, string difficulty, string orderBy
             Vue.component('paginate', VuejsPaginate);
@@ -167,6 +173,7 @@
                     this.categoriesCallback(1);
                     
                     $(".onChangeCallback").change(() => this.categoriesCallback(1));
+                    $("#searchInput").keypress(this.searchCallback);
                 },
                 methods: {
                     categoriesCallback: function(page) {
@@ -179,10 +186,16 @@
                             difficulty: $("#difficultySelect option:selected").attr("value"),
                             categoryIndex: $("#categorySelect option:selected").attr("value"),
                             orderBy: $("#orderBySelect option:selected").attr("value"),
+                            search: getSearchText($("#searchInput").val())
                         })).then(function(response) {
                             let pageCount = self.renderList('#categoriesList', response.data);
                             if (pageCount > 1) self.categoriesPageCount = pageCount;
                         });
+                    },
+                    searchCallback: function(e) {
+                        if (e.keyCode === 13) {
+                            this.categoriesCallback(1);
+                        }
                     },
                     
                     renderList: function(id, data) {

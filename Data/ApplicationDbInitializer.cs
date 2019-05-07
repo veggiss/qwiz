@@ -36,6 +36,9 @@ namespace Qwiz.Data
             for (var i = 0; i < 20; i++)
             {
                 dynamic randomQuestion = await GetObjectFromApi("https://opentdb.com/", "api.php?amount=1");
+                dynamic randomImage = await GetObjectFromApi("http://www.splashbase.co/", "api/v1/images/random");
+                
+                if (randomQuestion == null || randomImage == null) continue;
                 
                 var apiQuestions = new List<Question>();
                 
@@ -66,8 +69,7 @@ namespace Qwiz.Data
                 var ran = new Random();
                 string randomName = Path.GetRandomFileName().Replace(".", "");
                 string category = System.Web.HttpUtility.HtmlDecode(ApiQuizController.CategoryFromIndex(ran.Next(0, 23)));
-                dynamic randomImage = await GetObjectFromApi("http://www.splashbase.co/", "api/v1/images/random");
-
+                
                 var quiz = new Quiz(user, apiQuestions, category, randomName, "Description", "easy");
                 quiz.ImagePath = randomImage.url;
                 quiz.Upvotes = ran.Next(0, 500);
