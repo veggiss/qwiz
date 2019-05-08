@@ -1,11 +1,20 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.SpaServices.Prerendering;
 using Microsoft.EntityFrameworkCore;
 using Qwiz.Data;
 using Qwiz.Models;
@@ -33,8 +42,84 @@ namespace Qwiz.Controllers
 
             return Ok(user);
         }
+
+        [HttpGet("getQuizList")]
+        public async Task<IActionResult> GetQuizList(string username, int page, int size, string type, int? categoryIndex, string difficulty, string orderBy, string search)
+        {
+            if (page < 1 || size > 20) return BadRequest();
+
+            if (type == "history" && username != null)
+            {
+                var query = _um.Users
+                    .Where(u => u.UserName == username)
+                    .SelectMany(q => q.QuizzesTaken)
+                    .Include(q => q.Quiz)
+                    .ThenInclude(q => q.Questions)
+                    .Include(q => q.Quiz)
+                    .ThenInclude(q => q.Owner).ToList();
+                
+                var entries = query.Skip((page - 1) * size).Take(size).ToList();
+                var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
+                
+                return PartialView("Profile/_HistoryCardPartial", new HistoryCardModel(entries, totalPages));
+            }
+            
+            if (type == "quizzesBy" && username != null)
+            {
+                var query = _db.Quizzes
+                    .Include(q => q.Owner)
+                    .Where(q => q.Owner.UserName == username).ToList();
+                
+                var partialString = await _um.GetUserAsync(User) != null ? "Profile/_MyQuizPartial" : "Quiz/_QuizCardPartial";
+                var entries = query.Skip((page - 1) * size).Take(size).ToList();
+                var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
+                
+                return PartialView(partialString, new QuizCardModel(entries, totalPages));
+            }
+
+            if (type == "category")
+            {
+                var category =  CategoryFromIndex(categoryIndex);
+                var query = await _db.Quizzes.Include(q => q.Owner).ToListAsync();
+
+                if (category != null) 
+                    query = query.Where(q => q.Category == category).ToList();
+                
+                if (difficulty != null) 
+                    query = query.Where(q => q.Difficulty == difficulty).ToList();
+                
+                if (search != null)
+                {
+                    var searchArr = Regex.Split(search.ToLower(), @"\s+").Where(s => s != string.Empty);
+                    var queryTopic = query.Where(q => searchArr.Any(q.Topic.ToLower().Contains)).ToList();
+                    var queryUserName = query.Where(q => searchArr.Any(q.Owner.UserName.ToLower().Contains)).ToList();
+                    var queryDescription = query.Where(q => searchArr.Any(q.Description.ToLower().Contains)).ToList();
+                    var queryCategory = query.Where(q => searchArr.Any(q.Category.ToLower().Contains)).ToList();
+
+                    List<Quiz> searchList = new List<Quiz>();
+                    searchList.AddRange(queryTopic);
+                    searchList.AddRange(queryUserName);
+                    searchList.AddRange(queryDescription);
+                    searchList.AddRange(queryCategory);
+                    query = searchList.Distinct().ToList();
+                }
+                
+                if (orderBy != null)
+                {
+                    if (orderBy == "views") query = query.OrderByDescending(q => q.Views).ToList();
+                    if (orderBy == "upvotes") query = query.OrderByDescending(q => q.Upvotes).ToList();
+                    if (orderBy == "recent") query = query.OrderByDescending(q => q.CreationDate).ToList();
+                }
+                
+                var entries = query.Skip((page - 1) * size).Take(size).ToList();
+                var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
+                
+                return PartialView("Quiz/_QuizCardPartial", new QuizCardModel(entries, totalPages));
+            }
+
+            return null;
+        }
         
-        // api/answer?id=1&guess=A
         [HttpGet("answer")]
         [Authorize]
         public async Task<IActionResult> CheckAnswer(int quizId, int questionId, string guess)
@@ -44,6 +129,7 @@ namespace Qwiz.Controllers
             var user = await _db.Users
                 .Include(u => u.QuestionsTaken)
                 .Include(u => u.QuizzesTaken)
+                .ThenInclude(q => q.Quiz)
                 .SingleOrDefaultAsync(u => u.Id == _um.GetUserId(User));
 
             if (user.QuestionsTaken.Find(q => q.Question == question) == null)
@@ -55,7 +141,8 @@ namespace Qwiz.Controllers
             
             return Ok(new { correctAnswer = question.CorrectAnswer, quizFinished = await UpdateQuizTaken(user, quizId, question)});
         }
-
+        
+        // TODO: Change to a websocket solution?
         [HttpGet("wakeUp")]
         [Authorize]
         public async void SetLastActivity()
@@ -121,14 +208,33 @@ namespace Qwiz.Controllers
         [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
-            Console.WriteLine("----------------------------------");
-            Console.WriteLine(id);
+            // TODO: Fix relation for quizzes and questions taken
+            var user = await _db.Users
+                .Include(u => u.QuestionsTaken)
+                .ThenInclude(u => u.Question)
+                .Include(u => u.QuizzesTaken)
+                .ThenInclude(q => q.Quiz)
+                .SingleOrDefaultAsync(u => u.Id == _um.GetUserId(User));
+
+            if (user == null) return BadRequest();
             
             var quiz = await _db.Quizzes
                 .Include(q => q.Questions)
-                .FirstOrDefaultAsync(q => q.Id == id);
+                .Include(q => q.Owner)
+                .FirstOrDefaultAsync(q => q.Id == id && q.Owner == user);
 
             if (quiz == null) return BadRequest();
+
+            var quizTaken = user.QuizzesTaken.Find(q => q.Quiz == quiz);
+            user.QuizzesTaken.Remove(quizTaken);
+
+            foreach (var question in quiz.Questions)
+            {
+                var questionTaken = user.QuestionsTaken.Find(q => q.Question == question);
+                user.QuestionsTaken.Remove(questionTaken);
+            }
+            
+            await _um.UpdateAsync(user);
             
             _db.Questions.RemoveRange(quiz.Questions);
             _db.Quizzes.Remove(quiz);
@@ -189,7 +295,7 @@ namespace Qwiz.Controllers
             await _um.UpdateAsync(user);
         }
 
-        // This operation might be too complex, another option might be to add corresponding quiz to each question on creation.
+        // TODO: This operation might be too complex, another option might be to add corresponding quiz to each question on creation.
         private async Task<bool> UpdateQuizTaken(ApplicationUser user, int id, Question question)
         {
             Quiz quiz = await _db.Quizzes
@@ -197,8 +303,8 @@ namespace Qwiz.Controllers
                 .FirstOrDefaultAsync(i => i.Id == id);
 
             if (quiz == null) return false;
-            if (!quiz.Questions.Contains(question)) return false;
-            if (user.QuizzesTaken.Find(q => q.Quiz == quiz) != null) return false;
+            if (!quiz.Questions.Exists(q => q == question)) return false;
+            if (user.QuizzesTaken.Exists(q => q.Quiz == quiz)) return false;
 
             var correctAnswers = 0;
             var score = 0;
@@ -212,9 +318,45 @@ namespace Qwiz.Controllers
             }
             
             user.QuizzesTaken.Add(new QuizTaken(quiz, correctAnswers, score));
+            user.QuizzesTakenCount++;
             await _um.UpdateAsync(user);
                 
             return true;
+        }
+
+        public static string CategoryFromIndex(int? id)
+        {
+            if (id == null || id < 0 || id > 23) return null;
+            
+            string[] category =
+            {
+                "General Knowledge",                     //0
+                "Entertainment: Books",                  //1
+                "Entertainment: Film",                   //2
+                "Entertainment: Music",                  //3
+                "Entertainment: Musicals & Theatres",    //4
+                "Entertainment: Television",             //5
+                "Entertainment: Video Games",            //6
+                "Entertainment: Board Games",            //7
+                "Science &amp; Nature",                  //8
+                "Science: Computers",                    //9
+                "Science: Mathematics",                  //10
+                "Mythology",                             //11
+                "Sports",                                //12
+                "Geography",                             //13
+                "History",                               //14
+                "Politics",                              //15
+                "Art",                                   //16
+                "Celebrities",                           //17
+                "Animals",                               //18
+                "Vehicles",                              //19
+                "Entertainment: Comics",                 //20
+                "Science: Gadgets",                      //21
+                "Entertainment: Japanese Anime & Manga", //22
+                "Entertainment: Cartoon & Animations"    //23
+            };
+
+            return category[(int) id];
         }
     }
 }

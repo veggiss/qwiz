@@ -1,0 +1,8 @@
+@model QuizCardModel
+
+<div class="totalPages" amount="@Model.TotalPages">
+    @foreach (var item in Model.QuizList)
+    {
+        @await Html.PartialAsync("Quiz/_QuizCardSinglePartial", item)
+    }
+</div>

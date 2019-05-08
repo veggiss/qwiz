@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
@@ -30,16 +32,10 @@ namespace Qwiz.Controllers
             if (username == null) username = _um.GetUserName(User);
             if (username == null) return Redirect("../Identity/Account/Login");
             
-            var user = await _db.Users
-                .Include(u => u.QuestionsTaken)
-                .ThenInclude(u => u.Question)
-                .Include(u => u.QuizzesTaken)
-                .ThenInclude(u => u.Quiz)
-                .Include(u => u.MyQuizzes)
-                .SingleOrDefaultAsync(u => u.UserName == username);
-
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.UserName == username);
             if (user == null) return NotFound();
-            else return View(user);
+            
+            return View(user);
         }
     }
 

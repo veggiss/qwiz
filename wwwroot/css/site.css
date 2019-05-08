@@ -69,6 +69,13 @@ body {
 }
 
 
+.quizAvatar {
+  vertical-align: middle;
+  width: 186px;
+  height: 150px;
+  object-fit: cover;
+}
+
 .logo {
   vertical-align: middle;
   width: 300px;
@@ -85,5 +92,4 @@ body {
   height: 300px;
   border-radius: 200px;
 }
-
 

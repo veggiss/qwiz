@@ -2,7 +2,7 @@
 @{
     var xp = Model.Xp;
     var xpNeeded = Model.XpNeeded;
-    var online = Model.LastActivity > DateTime.Now.AddMinutes(-2);
+    var online = Model.LastActivity > DateTime.Now.AddMinutes(-5);
 }
 
 <div class="container">
@@ -31,7 +31,7 @@
         </div>
         <div class="col-sm">
             <h1>Quizzes taken</h1>
-            <h1>@Model.QuizzesTaken.Count</h1>
+            <h1>@Model.QuizzesTakenCount</h1>
         </div>
     </div>
    
@@ -47,9 +47,8 @@
             <li class="nav-item">
                 <a class="nav-link active" id="history-tab" data-toggle="tab" href="#history" role="tab" aria-controls="history" aria-selected="true">History</a>
             </li>
-                
             <li class="nav-item">
-                <a class="nav-link" id="myquizzes-tab" data-toggle="tab" href="#myquizzes" role="tab" aria-controls="myquizzes" aria-selected="false">My Qwizzes</a>
+                <a class="nav-link" id="myQuizzes-tab" data-toggle="tab" href="#myQuizzes" role="tab" aria-controls="myQuizzes" aria-selected="false">Quizzes by @Model.UserName</a>
             </li>
             <li>
                 <a class="nav-link" id="badges-tab" data-toggle="tab" href="#badges" role="tab" aria-controls="badges" aria-selected="false">Badges</a>
@@ -57,23 +56,74 @@
         </ul>
     </div>
     
-    <div class="tab-content" id="myTabContent">
+    <div class="tab-content justify-content-center" id="tabContent">
         <div class="tab-pane fade show active" id="history" role="tabpanel" aria-labelledby="history-tab">
-            <p>History</p>
+            <div class="w-100 d-flex justify-content-center">
+                <div id="historyList" style="width: 996px;"></div>
+            </div>
+            <template id="historyPaginate">
+                <paginate class="w-100 d-flex justify-content-center"
+                          :page-count="historyPageCount"
+                          :page-range="5"
+                          :margin-pages="0"
+                          :click-handler="historyCallback"
+                          :prev-text="'Prev'"
+                          :next-text="'Next'"
+                          :container-class="'pagination'"
+                          :page-class="'page-item'"
+                          :page-link-class="'page-link'"
+                          :next-link-class="'page-link'"
+                          :prev-link-class="'page-link'"
+                          :no-li-surround="false"
+                          :first-last-button="true">
+                </paginate>
+            </template>
         </div>
-        <div class="tab-pane fade" id="myquizzes" role="tabpanel" aria-labelledby="myquizzes-tab">       
-            @foreach (var item in Model.MyQuizzes)
-            {
-                <div class="float-left m-1 p-2 table-active" style="border-radius: 6px; width: 10.62rem;">
-                    <h6 class="card-title">@item.Topic</h6>
-                    <h6 class="card-subtitle mb-2 text-muted">@item.Category</h6>
-                    <h6 class="card-subtitle mb-2 text-muted">@item.Description</h6>
-                    <a class="badge badge-dark" asp-controller="Quiz" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                </div>
-            }
+        
+        <div class="tab-pane fade" id="myQuizzes" role="tabpanel" aria-labelledby="myQuizzes-tab">
+            <div class="w-100 d-flex justify-content-center">
+                <div id="myQuizzesList" style="width: 996px;"></div>
+            </div>
+            <template>
+                <paginate class="w-100 d-flex justify-content-center"
+                          :page-count="myQuizzesPageCount"
+                          :page-range="5"
+                          :margin-pages="0"
+                          :click-handler="myQuizzesCallback"
+                          :prev-text="'Prev'"
+                          :next-text="'Next'"
+                          :container-class="'pagination'"
+                          :page-class="'page-item'"
+                          :page-link-class="'page-link'"
+                          :next-link-class="'page-link'"
+                          :prev-link-class="'page-link'"
+                          :no-li-surround="false"
+                          :first-last-button="true">
+                </paginate>
+            </template>
         </div>
+        
         <div class="tab-pane fade" id="badges" role="tabpanel" aria-labelledby="badges-tab">
-            <p>badges</p>
+            <div class="w-100 d-flex justify-content-center">
+                <div id="badgesList" style="width: 996px;"></div>
+            </div>
+            <template id="badgesPaginate">
+                <paginate class="w-100 d-flex justify-content-center"
+                          :page-count="badgesPageCount"
+                          :page-range="5"
+                          :margin-pages="0"
+                          :click-handler="badgesCallback"
+                          :prev-text="'Prev'"
+                          :next-text="'Next'"
+                          :container-class="'pagination'"
+                          :page-class="'page-item'"
+                          :page-link-class="'page-link'"
+                          :next-link-class="'page-link'"
+                          :prev-link-class="'page-link'"
+                          :no-li-surround="false"
+                          :first-last-button="true">
+                </paginate>
+            </template>
         </div>
     </div>
 </div>
@@ -81,6 +131,48 @@
 @section Scripts
 {
     <script>
-        $(".progress-bar").css("width", ((@Model.Xp) / (@Model.XpNeeded)) * 100 + "%");
+        $(document).ready(() => {
+            let size = 6;
+            let apiUrl = (path, page, size, type) => `${path}?username=@Model.UserName&page=${page}&size=${size}&type=${type}`;
+            $(".progress-bar").css("width", ((@Model.Xp) / (@Model.XpNeeded)) * 100 + "%");
+
+            Vue.component('paginate', VuejsPaginate);
+            let app = new Vue({
+                el: '#tabContent',
+                data: {
+                    historyPageCount: 1,
+                    myQuizzesPageCount: 1,
+                    badgesPageCount: 1
+                },
+                mounted: function() {
+                    this.historyCallback(1);
+                    this.myQuizzesCallback(1);
+                },
+                methods: {
+                    historyCallback: function(page) {
+                        let self = this;
+                        axios.get(apiUrl('/api/getQuizList', page, size, 'history')).then(function(response) {
+                            let pageCount = self.renderList('#historyList', response.data);
+                            if (pageCount > 1) self.historyPageCount = pageCount;
+                        });
+                    },
+                    myQuizzesCallback: function(page) {
+                        let self = this;
+                        axios.get(apiUrl('/api/getQuizList', page, size, 'quizzesBy')).then(function(response) {
+                            let pageCount = self.renderList('#myQuizzesList', response.data);
+                            if (pageCount > 1) self.myQuizzesPageCount = pageCount;
+                        });
+                    },
+                    badgesCallback: function(pageNum) {
+                        
+                    },
+                    renderList: function(id, data) {
+                        $(id).empty();
+                        let result = $(id).html(data);
+                        return parseInt($(result.find(".totalPages")[0]).attr("amount"));
+                    }
+                }
+            });
+        });
     </script>
 }
