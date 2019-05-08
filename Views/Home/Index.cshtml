@@ -1,4 +1,5 @@
-﻿@{
+﻿@model List<Quiz>
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -11,39 +12,55 @@
       </div>
       <br>
     </div>
-    <p class="lead" style="text-align: center">Take and make quizzes for education or just for fun! Make a profile <strong>today</strong> and start your qwiz-journey.</p>
-    <hr class="my-4">
-    <p class="lead">
-      <div id="buttons" style="text-align: center">
-        <a class="btn btn-info btn-lg" href="Identity/Account/Login" role="button">Log in</a>
-        <a class="btn btn-success btn-lg" href="Quiz" role="button">Play</a>
+    <p class="lead" style="text-align: center">Take and make quizzes for education or just for fun! Make a profile and start your qwiz-journey <strong>today!</strong></p>
+  </div>
+  
+  <br>
+  <p class="lead">
+    <div id="buttons" style="text-align: center">
+      <a class="btn btn-info btn-lg" href="Identity/Account/Login" role="button">Log in</a>
+      <a class="btn btn-success btn-lg" href="Quiz" role="button">Play</a>
+    </div>
+  </p>
+
+  <br>
+  <br>
+  <div id="carouselIndicators" class="carousel slide" data-ride="carousel" style="height:200px; margin: 0 auto">
+    <ol class="carousel-indicators position-relative m-0 align-text-top">
+      <li data-target="#carouselIndicators" data-slide-to="0" class="active"></li>
+      <li data-target="#carouselIndicators" data-slide-to="1"></li>
+      <li data-target="#carouselIndicators" data-slide-to="2"></li>
+    </ol>
+    <br>
+    <div class="carousel-inner text-center w-75 center-block">
+      <div class="carousel-item active">
+        <h4>Perfect tool for studying!</h4>
+        <p class="lead"> Qwiz is created to be an educational tool to be used in high school and higher education.
+          As a student you can also revise your learning by taking quizzes specifically made for the subjects you are learning at the time.
+          You can also make your own customized quiz and share it with your classmates.</p>
       </div>
-    </p>
+      <div class="carousel-item">
+        <h4>How to become a Qwiz-master?</h4>
+        <p class="lead">By making a profile on qwiz you are able to collect XP for every quiz you take. When you overcome levels and goals you receive
+          badges. On your profile page you can follow your progress on a progress bar.</p>
+      </div>
+      <div class="carousel-item">
+        <h4>Do you want to make your own quiz?</h4>
+        <br>
+        <a class="btn btn-primary btn-lg" href="Quiz/Create" role="button">Create Quiz</a>
+      </div>
+    </div>
+    <a class="carousel-control-prev" href="#carouselIndicators" role="button" data-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="sr-only">Previous</span>
+    </a>
+    <a class="carousel-control-next" href="#carouselIndicators" role="button" data-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="sr-only">Next</span>
+    </a>
+    
+    
   </div>
 </div>
 
-
-<br></br>
-
-<div id="info2" >
-  
-  <h2>Perfect for studying!</h2>
-  <p> Qwiz is created to be an educational tool to be used in high school and higher education.
-    As a student you can also revise your learning by taking quizzes specifically made for the subjects you are learning at the time. 
-    You can also make your own customized quiz and share it with your classmates.</p>
-  
-</div>
-
-<br></br>
-<hr></hr>
-<br></br>
-
-<div id="info" >
-  
-  <h2>How to become a Qwiz-master</h2>
-  <p> By making a profile on qwiz you are able to collect XP for every quiz you take. When you overcome levels and goals you receive 
-    badges. On your profile page you can follow your progress on a progress bar.
-  
-  
-</div>
 
