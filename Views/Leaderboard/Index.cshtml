@@ -1,0 +1,11 @@
+@model List<ApplicationUser>
+
+<div class="col-sm">
+   <h1>Top 100 players</h1>  
+   @foreach (var user in Model)
+   {
+      @user.UserName
+      <br/>
+      @user.Xp
+   }
+</div>
