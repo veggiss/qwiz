@@ -36,12 +36,44 @@ namespace Qwiz.Controllers
             _um = um;
         }
 
-        [HttpGet("getUser")]
-        public async Task<IActionResult> GetUser()
+        // TODO: Return startpage if page is null and endpage if page exceeds questions length
+        [HttpGet("getQuestion")]
+        public async Task<IActionResult> GetQuestion(int? id, int? page)
         {
-            ApplicationUser user = await _um.FindByEmailAsync("user@uia.no");
+            if (id == null) return BadRequest();
+            
+            var quiz = await _db.Quizzes
+                .Include(q => q.Questions)
+                .SingleOrDefaultAsync(q => q.Id == id);
+            
+            if (quiz == null) return BadRequest();
+            if (page == null || page > quiz.Questions.Count) 
+                return PartialView("Play/_QuestionIntroPartial", quiz);
+            
+            var question = quiz.Questions.ElementAt((int) page);
+            if (question == null) return BadRequest();
 
-            return Ok(user);
+            return PartialView("Play/_QuestionPartial", question);
+        }
+
+        // TODO: Costly operation?
+        [HttpGet("getQuizSummary")]
+        [Authorize]
+        public async Task<IActionResult> GetQuizSummary(int? id)
+        {
+            if (id == null) return BadRequest();
+
+            var user = await _db.Users
+                .Include(u => u.QuizzesTaken)
+                .ThenInclude(q => q.Quiz)
+                .SingleOrDefaultAsync(u => u.Id == _um.GetUserId(User));
+            
+            if (user == null) return BadRequest();
+
+            var quizTaken = user.QuizzesTaken.Find(q => q.Quiz.Id == id);
+            if (quizTaken == null) return BadRequest();
+
+            return PartialView("Play/_QuizSummaryPartial", quizTaken);
         }
 
         [HttpGet("getQuizList")]
@@ -51,13 +83,13 @@ namespace Qwiz.Controllers
 
             if (type == "history" && username != null)
             {
-                var query = _um.Users
+                var query = await _um.Users
                     .Where(u => u.UserName == username)
                     .SelectMany(q => q.QuizzesTaken)
                     .Include(q => q.Quiz)
                     .ThenInclude(q => q.Questions)
                     .Include(q => q.Quiz)
-                    .ThenInclude(q => q.Owner).ToList();
+                    .ThenInclude(q => q.Owner).ToListAsync();
                 
                 var entries = query.Skip((page - 1) * size).Take(size).ToList();
                 var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
@@ -67,9 +99,9 @@ namespace Qwiz.Controllers
             
             if (type == "quizzesBy" && username != null)
             {
-                var query = _db.Quizzes
+                var query = await _db.Quizzes
                     .Include(q => q.Owner)
-                    .Where(q => q.Owner.UserName == username).ToList();
+                    .Where(q => q.Owner.UserName == username).ToListAsync();
                 
                 var partialString = (await _um.GetUserAsync(User)).UserName == username ? "Profile/_MyQuizPartial" : "Quiz/_QuizCardPartial";
                 var entries = query.Skip((page - 1) * size).Take(size).ToList();
@@ -81,7 +113,8 @@ namespace Qwiz.Controllers
             if (type == "category")
             {
                 var category =  CategoryFromIndex(categoryIndex);
-                var query = await _db.Quizzes.Include(q => q.Owner).ToListAsync();
+                var query = await _db.Quizzes
+                    .Include(q => q.Owner).ToListAsync();
 
                 if (category != null) 
                     query = query.Where(q => q.Category == category).ToList();
@@ -122,25 +155,32 @@ namespace Qwiz.Controllers
         }
         
         [HttpGet("answer")]
-        [Authorize]
         public async Task<IActionResult> CheckAnswer(int quizId, int questionId, string guess)
         {
             var question = await _db.Questions.FindAsync(questionId);
             if (question == null) return BadRequest("Couldn't find that question");
-            var user = await _db.Users
-                .Include(u => u.QuestionsTaken)
-                .Include(u => u.QuizzesTaken)
-                .ThenInclude(q => q.Quiz)
-                .SingleOrDefaultAsync(u => u.Id == _um.GetUserId(User));
 
-            if (user.QuestionsTaken.Find(q => q.Question == question) == null)
-            {
-                var answeredCorrectly = guess == question.CorrectAnswer;
-                AddQuestionTaken(user, question, answeredCorrectly);
-                if (answeredCorrectly) AddExperience(user, XpGainedFromQuestion(question.Difficulty));
+            var userId = _um.GetUserId(User);
+            
+            if (userId != null) {
+                var user = await _db.Users
+                    .Include(u => u.QuestionsTaken)
+                    .Include(u => u.QuizzesTaken)
+                    .ThenInclude(q => q.Quiz)
+                    .SingleOrDefaultAsync(u => u.Id == userId);
+
+                if (user.QuestionsTaken.Find(q => q.Question == question) == null)
+                {
+                    var answeredCorrectly = guess == question.CorrectAnswer;
+                    AddQuestionTaken(user, question, answeredCorrectly);
+                    if (answeredCorrectly)
+                        AddExperience(user, XpGainedFromQuestion(question.Difficulty));
+                }
+
+                UpdateQuizTaken(user, quizId, question);
             }
             
-            return Ok(new { correctAnswer = question.CorrectAnswer, quizFinished = await UpdateQuizTaken(user, quizId, question)});
+            return Ok(new {correctAnswer = question.CorrectAnswer});
         }
         
         // TODO: Change to a websocket solution?
@@ -259,13 +299,11 @@ namespace Qwiz.Controllers
             if (!image.ContentType.Contains("image")) return BadRequest("File type not supported");
             if (image.Length > 1024 * 1024) return BadRequest("Files bigger than 1MB not allowed");
             
-            string filename = Guid.NewGuid() + Path.GetExtension(image.FileName);
+            var filename = Guid.NewGuid() + Path.GetExtension(image.FileName);
             var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", filename);
 
             using (var stream = new FileStream(path, FileMode.Create))
-            {
                 await image.CopyToAsync(stream);
-            }
 
             return Ok("/images/" + filename);
         }
@@ -302,16 +340,16 @@ namespace Qwiz.Controllers
             await _um.UpdateAsync(user);
         }
 
-        // TODO: This operation might be too complex, another option might be to add corresponding quiz to each question on creation.
-        private async Task<bool> UpdateQuizTaken(ApplicationUser user, int id, Question question)
+        // TODO: can we optimize these queries?
+        private async void UpdateQuizTaken(ApplicationUser user, int id, Question question)
         {
             Quiz quiz = await _db.Quizzes
                 .Include(m => m.Questions)
                 .FirstOrDefaultAsync(i => i.Id == id);
 
-            if (quiz == null) return false;
-            if (!quiz.Questions.Exists(q => q == question)) return false;
-            if (user.QuizzesTaken.Exists(q => q.Quiz == quiz)) return false;
+            if (quiz == null) return;
+            if (!quiz.Questions.Exists(q => q == question)) return;
+            if (user.QuizzesTaken.Exists(q => q.Quiz == quiz)) return;
 
             var correctAnswers = 0;
             var score = 0;
@@ -319,16 +357,14 @@ namespace Qwiz.Controllers
             foreach(var a in quiz.Questions)
             {
                 var questionTaken = user.QuestionsTaken.Find(b => b.Question == a);
-                if (questionTaken == null) return false;
+                if (questionTaken == null) return;
                 if (questionTaken.AnsweredCorrectly) correctAnswers++;
                 score += XpGainedFromQuestion(questionTaken.Question.Difficulty);
             }
             
             user.QuizzesTaken.Add(new QuizTaken(quiz, correctAnswers, score));
             user.QuizzesTakenCount++;
-            await _um.UpdateAsync(user);
-                
-            return true;
+            await _um.UpdateAsync(user);;
         }
 
         public static string CategoryFromIndex(int? id)

@@ -30,18 +30,18 @@ namespace Qwiz.Controllers
             return View(await quizzes.ToListAsync());
         }
 
-        public async Task<IActionResult> Play(int id)
+        public IActionResult Play(int id)
         {
-            var quizzes = await _db.Quizzes
-                .Include(c => c.Questions)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (quizzes == null) return NotFound();
-
-            var questions = quizzes.Questions;
-            if (questions == null) return NotFound();
-            questions.ForEach(item => item.CorrectAnswer = "");
+            //var quizzes = await _db.Quizzes
+            //    .Include(c => c.Questions)
+            //    .FirstOrDefaultAsync(m => m.Id == id);
+            //if (quizzes == null) return NotFound();
             
-            return View(new QuizViewModel(id, questions.ToList()));
+            //var questions = quizzes.Questions;
+            //if (questions == null) return NotFound();
+            //questions.ForEach(item => item.CorrectAnswer = "");
+            
+            return View(id);
         }
 
         public IActionResult Create()

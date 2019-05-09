@@ -1,7 +1,10 @@
-@model QuizViewModel
+@model int
 
-<div id="app" style="margin: 0 auto; width: 555px;">
-    <div class="text-center">
+<div style="margin: 0 auto; width: 555px;">
+    <div id="questionContent"></div>
+    <button id="nextBtn" type="button" class="btn btn-dark" style="margin: 5px; width: 98%">Next</button>
+    
+    <!-- <div class="text-center">
         <h1 class="display-4" style="font-size: 40px; width: 100%; text-align: center;">{{quiz.questions[page].questionText}}</h1>
         <img style="display:block; margin:auto;" class="questionImgPrev" width="500" v-bind:src="quiz.questions[page].imagePath"/>
     </div>
@@ -25,12 +28,15 @@
     
     <div class="text-center">
         <h1>{{resultMsg}}</h1>
-    </div>
+    </div> -->
 </div>
+
 
 @section Scripts
 {
-    <script>let model = @Json.Serialize(Model);</script>
+    <script>let model = {
+        quizId: @Model
+    }</script>
     <environment include="Development">
         <script src="~/js/quiz/play.js"></script>
     </environment>
