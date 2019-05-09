@@ -51,5 +51,3 @@ setInterval(() => {
         window.localStorage.setItem("lastActivity", (Date.now() + 1000 * 60).toString());
     }
 }, 1000 * 60);
-
-util.openModal("Hei");
