@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -70,7 +71,7 @@ namespace Qwiz.Controllers
                     .Include(q => q.Owner)
                     .Where(q => q.Owner.UserName == username).ToList();
                 
-                var partialString = await _um.GetUserAsync(User) != null ? "Profile/_MyQuizPartial" : "Quiz/_QuizCardPartial";
+                var partialString = (await _um.GetUserAsync(User)).UserName == username ? "Profile/_MyQuizPartial" : "Quiz/_QuizCardPartial";
                 var entries = query.Skip((page - 1) * size).Take(size).ToList();
                 var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
                 
@@ -117,7 +118,7 @@ namespace Qwiz.Controllers
                 return PartialView("Quiz/_QuizCardPartial", new QuizCardModel(entries, totalPages));
             }
 
-            return null;
+            return BadRequest();
         }
         
         [HttpGet("answer")]
@@ -179,12 +180,18 @@ namespace Qwiz.Controllers
 
         [HttpPost("update")]
         [Authorize]
+        // TODO: Should be tested for a possible way to modify static properties
         public async Task<IActionResult> UpdateQuiz([FromBody] Quiz quizForm)
         {
+            // Unbinds properties from the model, these should not be touched
+            Unbind(ModelState, "CreationDate", "Views", "Upvotes", "Owner");
+            
             if (!ModelState.IsValid) return BadRequest();
+            
             var quiz = await _db.Quizzes
                 .Include(q => q.Questions)
                 .FirstOrDefaultAsync(q => q.Id == quizForm.Id);
+            
             if (quiz == null) return BadRequest();
             if (quiz.OwnerId != _um.GetUserId(User)) return BadRequest();
             
@@ -357,6 +364,12 @@ namespace Qwiz.Controllers
             };
 
             return category[(int) id];
+        }
+        
+        private static void Unbind(ModelStateDictionary modelState, params string[] modelProperties)
+        {
+            foreach (var prop in modelProperties)
+                modelState.Remove(prop);
         }
     }
 }
