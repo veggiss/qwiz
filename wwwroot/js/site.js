@@ -10,7 +10,12 @@ let util = {
         });
 
         return url;
+    },
+    openModal: function (text) {
+        $("#globalModalMsg").text(text);
+        $("#modalGlobal").modal()
     }
+    
 };
 
 // Global vars goes here
@@ -46,3 +51,5 @@ setInterval(() => {
         window.localStorage.setItem("lastActivity", (Date.now() + 1000 * 60).toString());
     }
 }, 1000 * 60);
+
+util.openModal("Hei");

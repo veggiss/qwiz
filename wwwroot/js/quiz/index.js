@@ -27,6 +27,7 @@ $(document).ready(function () {
                 })).then(function(response) {
                     let pageCount = self.renderList('#categoriesList', response.data);
                     if (pageCount > 1) self.categoriesPageCount = pageCount;
+                    
                 });
             },
             searchCallback: function(e) {
