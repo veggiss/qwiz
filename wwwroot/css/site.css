@@ -74,6 +74,29 @@ body {
   height: 150px;
   object-fit: cover;
 }
+.leaderboardavatar {
+  vertical-align: middle;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+#leaderboard
+{
+  counter-reset: rowNumber;
+}
+
+#leaderboard #leaderboardRow> .leaderboardColumn:first-child
+{
+  counter-increment: rowNumber;
+}
+
+#leaderboard #leaderboardRow .leaderboardColumn:first-child::before
+{
+  content: counter(rowNumber);
+}
+
 
 .logo {
   vertical-align: middle;
