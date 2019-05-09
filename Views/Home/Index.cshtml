@@ -19,7 +19,7 @@
   <p class="lead">
     <div id="buttons" style="text-align: center">
       <a class="btn btn-info btn-lg" href="Identity/Account/Login" role="button">Log in</a>
-      <a class="btn btn-success btn-lg" href="Quiz" role="button">Play</a>
+      <a class="btn btn-primary btn-lg" href="Quiz" role="button">Play</a>
     </div>
   </p>
 
@@ -47,7 +47,7 @@
       <div class="carousel-item">
         <h4>Do you want to make your own quiz?</h4>
         <br>
-        <a class="btn btn-primary btn-lg" href="Quiz/Create" role="button">Create Quiz</a>
+        <a class="btn btn-success btn-lg" href="Quiz/Create" role="button">Create Quiz</a>
       </div>
     </div>
     <a class="carousel-control-prev" href="#carouselIndicators" role="button" data-slide="prev">
@@ -62,5 +62,11 @@
     
   </div>
 </div>
+
+
+  @foreach (var quiz in Model)
+  {
+    @await Html.PartialAsync("Quiz/_QuizCardSinglePartial", quiz)
+  }
 
 

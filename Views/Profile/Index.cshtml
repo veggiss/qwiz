@@ -131,48 +131,16 @@
 @section Scripts
 {
     <script>
-        $(document).ready(() => {
-            let size = 6;
-            let apiUrl = (path, page, size, type) => `${path}?username=@Model.UserName&page=${page}&size=${size}&type=${type}`;
-            $(".progress-bar").css("width", ((@Model.Xp) / (@Model.XpNeeded)) * 100 + "%");
-
-            Vue.component('paginate', VuejsPaginate);
-            let app = new Vue({
-                el: '#tabContent',
-                data: {
-                    historyPageCount: 1,
-                    myQuizzesPageCount: 1,
-                    badgesPageCount: 1
-                },
-                mounted: function() {
-                    this.historyCallback(1);
-                    this.myQuizzesCallback(1);
-                },
-                methods: {
-                    historyCallback: function(page) {
-                        let self = this;
-                        axios.get(apiUrl('/api/getQuizList', page, size, 'history')).then(function(response) {
-                            let pageCount = self.renderList('#historyList', response.data);
-                            if (pageCount > 1) self.historyPageCount = pageCount;
-                        });
-                    },
-                    myQuizzesCallback: function(page) {
-                        let self = this;
-                        axios.get(apiUrl('/api/getQuizList', page, size, 'quizzesBy')).then(function(response) {
-                            let pageCount = self.renderList('#myQuizzesList', response.data);
-                            if (pageCount > 1) self.myQuizzesPageCount = pageCount;
-                        });
-                    },
-                    badgesCallback: function(pageNum) {
-                        
-                    },
-                    renderList: function(id, data) {
-                        $(id).empty();
-                        let result = $(id).html(data);
-                        return parseInt($(result.find(".totalPages")[0]).attr("amount"));
-                    }
-                }
-            });
-        });
+        let model = {
+            userName: '@Model.UserName',
+            xpNeeded: '@Model.XpNeeded',
+            xp: '@Model.Xp'           
+        };
     </script>
+    <environment include="Development">
+        <script src="~/js/profile/index.js"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/profile/index.min.js" asp-append-version="true"></script>
+    </environment>
 }
