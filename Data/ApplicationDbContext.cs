@@ -9,13 +9,9 @@ namespace Qwiz.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
-            
         }
         
         public DbSet<Quiz> Quizzes { get; set; }
         public DbSet<Question> Questions { get; set; }
-        
-        //test
-        public DbSet<ApplicationUser> ApplicationUsers { get; set; }
     }
 }

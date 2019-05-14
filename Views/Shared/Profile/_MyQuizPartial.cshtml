@@ -1,0 +1,9 @@
+@using Microsoft.AspNetCore.Identity
+@model QuizCardModel
+
+<div class="totalPages" amount="@Model.TotalPages">
+    @foreach (var item in Model.QuizList)
+    {
+        @await Html.PartialAsync("Profile/_MyQuizSinglePartial", item)
+    }
+</div>

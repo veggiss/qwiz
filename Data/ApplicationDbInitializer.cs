@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
-using Newtonsoft.Json;
+using Qwiz.Controllers;
 using Qwiz.Models;
 
 namespace Qwiz.Data
@@ -16,45 +17,42 @@ namespace Qwiz.Data
             db.Database.EnsureDeleted();
             db.Database.EnsureCreated();
             
-            var user = new ApplicationUser {FirstName = "Admin", LastName = "Boss", UserName = "user@uia.no", Email = "user@uia.no"};
-            um.CreateAsync(user, "Password1.").Wait();
-            db.SaveChanges();
+            var user = new ApplicationUser {FirstName = "Admin", LastName = "Boss", UserName = "user123", Email = "user@uia.no"};
+            await um.CreateAsync(user, "Password1.");
+            await db.SaveChangesAsync();
             
             var question1 = new Question("multiple_choice", "What color is grass?", "[\"a\", \"b\", \"c\", \"d\"]", "A", "hard", "");
             var question2 = new Question("true_false", "Is grass green?", null, "true", "easy", "");
             
             await db.Questions.AddRangeAsync(question1, question2);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
             
             var questions = new List<Question>() {question1, question2};
-            var quiz = new Quiz(user, questions, "Category", "Topic", "Description");
-
-            await db.Quizzes.AddRangeAsync(quiz);
-            db.SaveChanges();
+            
+            await db.Quizzes.AddAsync(new Quiz(user, questions, "Category", "Topic", "Description", "easy"));
+            await db.SaveChangesAsync();
 
             // Get questions from open trivia DB API
-            for (var i = 0; i < 5; i++)
+            for (var i = 0; i < 20; i++)
             {
-                Console.WriteLine("STARTING REQUEST ----------");
-                dynamic apiResponse = await GetRandomQuestion(1);
+                dynamic randomQuestion = await GetObjectFromApi("https://opentdb.com/", "api.php?amount=1");
+                dynamic randomImage = await GetObjectFromApi("http://www.splashbase.co/", "api/v1/images/random");
+                
+                if (randomQuestion == null || randomImage == null) continue;
                 
                 var apiQuestions = new List<Question>();
                 
-                foreach (var q in apiResponse.results)
+                foreach (var q in randomQuestion.results)
                 {
-                    string text = q.question;
-                    text = System.Web.HttpUtility.HtmlDecode(text);
+                    if (q == null) continue;
+                    
+                    string text = System.Web.HttpUtility.HtmlDecode((string) q.question);
                     string qType = q.type;
                     string qDifficulty = q.difficulty;
-                    
-                    Console.WriteLine(q);
-                    
                     Question question;
+                    
                     if (qType == "multiple") {
                         string alt = "[\"" + q.correct_answer + "\",\"" + q.incorrect_answers[0] + "\",\"" + q.incorrect_answers[1] + "\",\"" + q.incorrect_answers[2] + "\"]";
-                        Console.WriteLine(text);
-                        Console.WriteLine(alt);
-                        Console.WriteLine(q.difficulty);
                         question = new Question("multiple_choice", text, alt, "A", qDifficulty, "");
                     } 
                     else
@@ -67,30 +65,33 @@ namespace Qwiz.Data
                     await db.Questions.AddRangeAsync(question);
                     db.SaveChanges();
                 }
+
+                var ran = new Random();
+                string randomName = Path.GetRandomFileName().Replace(".", "");
+                string category = System.Web.HttpUtility.HtmlDecode(ApiQuizController.CategoryFromIndex(ran.Next(0, 23)));
                 
-                await db.Quizzes.AddRangeAsync(new Quiz(user, apiQuestions, "Random", "Random", "Random"));
+                var quiz = new Quiz(user, apiQuestions, category, randomName, "Description", "easy");
+                quiz.ImagePath = randomImage.url;
+                quiz.Upvotes = ran.Next(0, 500);
+                quiz.Views = ran.Next(0, 50000);
+                await db.Quizzes.AddRangeAsync(quiz);
                 db.SaveChanges();
             }
         }
 
-        private static async Task<object> GetRandomQuestion(int amount)
+        private static async Task<object> GetObjectFromApi(string host, string path)
         {
             using (var client = new HttpClient())
             {
                 object product;
-                client.BaseAddress = new Uri("https://opentdb.com/");
+                client.BaseAddress = new Uri(host);
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                HttpResponseMessage response = await client.GetAsync("api.php?amount=" + amount);
-                if (response.IsSuccessStatusCode)
-                {
-                    product = await response.Content.ReadAsAsync<object>();
-                }
-                else
-                {
-                    product = null;
-                }
+                HttpResponseMessage response = await client.GetAsync(path);
+                
+                if (response.IsSuccessStatusCode) product = await response.Content.ReadAsAsync<object>();
+                else product = null;
 
                 return product;
             }

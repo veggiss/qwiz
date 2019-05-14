@@ -1,0 +1,44 @@
+@model HistoryCardModel
+
+<div class="totalPages" amount="@Model.TotalPages">
+    @foreach (var item in Model.QuizTakenList)
+    {
+        <div class="card float-left m-2" style="width: 32.6rem;">
+            <div class="row no-gutters">
+                <div class="col-4">
+                    <img class="quizAvatar img-fluid" src=@(item.Quiz.ImagePath == null ? "https://picsum.photos/300/200" : item.Quiz.ImagePath)>
+                </div>
+                <div class="col-8">
+                    <div class="px-2">
+                        <h4 class="mt-1 mb-0 overflow-hidden">@item.Quiz.Topic</h4>
+                        <div class="w-100">
+                            <span class="badge badge-pill badge-light">By: @item.Quiz.Owner.UserName</span>
+                            <span class="badge badge-pill badge-primary">@item.Quiz.Category</span>
+                            @if (item.Quiz.Difficulty == "easy")
+                            {
+                                <span class="badge badge-pill badge-success">@item.Quiz.Difficulty</span>
+                            }
+                            else if (item.Quiz.Difficulty == "medium")
+                            {
+                                <span class="badge badge-pill badge-warning">@item.Quiz.Difficulty</span>
+                            }
+                            else if (item.Quiz.Difficulty == "hard")
+                            {
+                                <span class="badge badge-pill badge-danger">@item.Quiz.Difficulty</span>
+                            }
+                        </div>
+                        <div class="overflow-hidden mt-1" style="max-height: 50px;">
+                            <p class="m-0">Score: @item.Score</p>
+                            <p class="m-0">@item.CorrectAnswers of @item.Quiz.Questions.Count correct answers!</p>
+                        </div>
+                    </div>
+                    <div class="w-100 position-absolute" style="bottom: 0;">
+                        <div class="w-100 btn-group btn-group-sm" role="group" aria-label="...">
+                            <a class="btn btn-primary" asp-controller="Quiz" asp-action="Play" asp-route-id="@item.Id">Play</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

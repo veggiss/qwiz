@@ -1,3 +1,5 @@
+@model Quiz
+
 <div class="text-center">
     <h1 class="display-4">Quiz Maker</h1>
 </div>
@@ -23,10 +25,18 @@
                      <label>Category</label>
                      <input id="quizCategory" type="text" class="form-control" required>
                  </div>
-                 <div class="form-group">
-                     <label>Description</label>
-                     <input id="quizDescription" type="text" class="form-control" required>
-                 </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input id="quizDescription" type="text" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Quiz Difficulty</label>
+                    <select id="quizDifficulty" class="form-control">
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>
@@ -34,6 +44,11 @@
     <hr>
     <button id="btnAddQuizForm" type="button" class="btn btn-primary" style="margin: 5px; width: 98%">+ Add question</button>
     <button id="btnCreateQuiz" type="button" class="btn btn-success" style="margin: 5px; width: 98%">Create Quiz</button>
+    
+    <div id="deleteDiv" style="display: none">
+        <hr>
+        <button id="btnDeleteQuiz" type="button" class="btn btn-danger" style="margin: 5px; width: 98%">Delete Quiz</button>
+    </div>
     
     <div class="alert alert-danger" style="display: none">
         <button type="button" class="close">&times;</button>
@@ -49,6 +64,7 @@
             let qfLength = () => $(".quizForm").length + 1;
             let getRoot = a => $(a).closest(".quizForm");
 
+
             $("#btnAddQuizForm").click(function() {
                 $("#quizField").append(getQuizForm());
             });
@@ -61,57 +77,70 @@
                 $(".alert").hide();
             });
 
-            $(document).on("change", ".questionType", function(e) {
-                let ans = getRoot(this).find(".correctAnswer");
-                let alt = getRoot(this).find(".alternatives");
+            $(document).on("change",
+                ".questionType",
+                function(e) {
+                    let ans = getRoot(this).find(".correctAnswer");
+                    let alt = getRoot(this).find(".alternatives");
 
-                switch (e.currentTarget.selectedIndex) {
-                    case 0: {
+                    switch (e.currentTarget.selectedIndex) {
+                    case 0:
+                    {
                         alt.show();
                         ans.empty();
-    
+
                         alt.find("input").each(function() {
                             $(this).attr("required", true);
                         });
-    
+
                         ["A", "B", "C", "D"].forEach(e => {
                             ans.append($("<option></option>").text(e));
                         });
-    
+
                         break;
-                    } case 1: {
+                    }
+                    case 1:
+                    {
                         alt.hide();
                         ans.empty();
-    
+
                         alt.find("input").each(function() {
                             $(this).attr("required", false);
                         });
-    
+
                         [{ text: "True", value: true }, { text: "False", value: false }].forEach(e => {
                             ans.append($("<option></option>").attr("value", e.value).text(e.text));
                         });
-    
+
                         break;
-                    } default: {
+                    }
+                    default:
+                    {
                         console.error("Not a valid question type!");
                     }
-                }
-            });
+                    }
+                });
 
-            $(document).on("click", "button.removeQuizForm", function() {
-                getRoot(this).remove();
-                updateQuizForms();
-            });
+            $(document).on("click",
+                "button.removeQuizForm",
+                function() {
+                    getRoot(this).remove();
+                    updateQuizForms();
+                });
 
-            $(document).on("click", "button.collapseQuizForm", function() {
-                getRoot(this).find(".collapse").slideToggle("slow", "swing");
-            });
-            
-            $(document).on("change", "input.questionImg", async function() {
-                let path = await uploadImage(this.files[0]).catch(e => console.log(e));
-                let questionImgPrev = getRoot(this).find(".questionImgPrev");
-                questionImgPrev.attr('src', path);
-            });
+            $(document).on("click",
+                "button.collapseQuizForm",
+                function() {
+                    getRoot(this).find(".collapse").slideToggle("slow", "swing");
+                });
+
+            $(document).on("change",
+                "input.questionImg",
+                async function() {
+                    let path = await uploadImage(this.files[0]).catch(e => console.log(e));
+                    let questionImgPrev = getRoot(this).find(".questionImgPrev");
+                    questionImgPrev.attr('src', path);
+                });
 
             $("#quizImg").change(async function() {
                 let path = await uploadImage(this.files[0]).catch(e => console.log(e));
@@ -124,11 +153,13 @@
                 formData.set('image', file);
 
                 return new Promise(function(resolve, reject) {
-                    axios.post('/api/uploadImage', formData, {
-                        headers: {
-                            'Content-Type': 'multipart/form-data'
-                        }
-                    }).then(function(response) {
+                    axios.post('/api/uploadImage',
+                        formData,
+                        {
+                            headers: {
+                                'Content-Type': 'multipart/form-data'
+                            }
+                        }).then(function(response) {
                         resolve(response.data);
                     }).catch(function(err) {
                         reject(err);
@@ -149,13 +180,16 @@
                         category: $("#quizCategory").val(),
                         description: $("#quizDescription").val(),
                         imagePath: $("#quizImgPrev").attr('src'),
+                        difficulty: $("#quizDifficulty").children("option:selected").val(),
                         questions: []
                     };
 
                     $(".quizForm").each(function(i) {
                         let type = getType([$(this).find(".questionType")[0].selectedIndex]);
                         let a = $(this).find(".alternative");
-                        let alt = type === "multiple_choice" ? JSON.stringify([a[0].value, a[1].value, a[2].value, a[3].value]) : null;
+                        let alt = type === "multiple_choice"
+                            ? JSON.stringify([a[0].value, a[1].value, a[2].value, a[3].value])
+                            : null;
 
                         let question = {
                             correctAnswer: $(this).find(".correctAnswer").children("option:selected").val(),
@@ -163,30 +197,84 @@
                             questionType: type,
                             imagePath: $(this).find(".questionImgPrev").attr('src'),
                             alternatives: alt,
-                            difficulty: $(this).find(".questionDifficulty").children("option:selected").val().toLowerCase()
-                    };
+                            difficulty: $(this).find(".questionDifficulty").children("option:selected").val()
+                                .toLowerCase()
+                        };
 
                         quizForm.questions.push(question);
                     });
 
-                    console.log(quizForm);
+                    let api = '/api/create';
 
-                    axios.post('/api/create',
-                        JSON.stringify(quizForm),
-                        {
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        }).then(function(response) {
-                        console.log(response);
+                    if (isEdit()) {
+                        let form = (@Json.Serialize(Model));
+                        quizForm.id = form.id;
+                        quizForm.ownerId = form.ownerId;
+                        api = '/api/update';
+                    }
+
+                    axios.post(api, JSON.stringify(quizForm), {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }).then(function(response) {
+                        if (response.status === 200) {
+                            window.location.href = '/Profile';
+                        }
                     });
                 } else {
                     $(".alert").show().delay(2000).fadeOut();
                 }
             }
 
-            function getQuizForm() {
-                return `
+            function isEdit() {
+                return '@Model' === '' ? false : true;
+            }
+
+            function writeQuizEdit() {
+                if (isEdit()) {
+                    let quizForm = @Json.Serialize(Model);
+                    $("#btnCreateQuiz").text("Update Quiz");
+                    $("#quizTitle").val(quizForm.topic);
+                    $("#quizCategory").val(quizForm.category);
+                    $("#quizDescription").val(quizForm.description);
+                    $("#quizImgPrev").attr("src", quizForm.imagePath);
+
+                    quizForm.questions.forEach(question => {
+                        let dom = $(getQuizForm());
+                        let altDom = $(dom).find(".alternative");
+
+                        $(dom).find(".questionText").val(question.questionText);
+                        $(dom).find(".questionDifficulty").val(question.difficulty);
+                        $(dom).find(".questionImgPrev").attr("src", question.imagePath);
+
+                        let alternatives = JSON.parse(question.alternatives);
+                        if (alternatives != null) {
+                            alternatives.forEach((e, i) => {
+                                $(altDom[i]).val(e);
+                            });
+                        }
+
+                        $("#quizField").append(dom);
+
+                        $(dom).find(".questionType").val(question.questionType);
+                        $(dom).find(".questionType").trigger("change");
+                        $(dom).find(".correctAnswer").val(question.correctAnswer);
+                    });
+
+                    $("#deleteDiv").show();
+                    $("#btnDeleteQuiz").click(function() {
+                        axios.delete('/api/delete?id=' + quizForm.id).then(function(response) {
+                            if (response.status === 200) {
+                                window.location.href = '/Profile';
+                            }
+                        });
+                });
+        }
+        }
+
+        function getQuizForm() {
+            return `
                 <div class="quizForm"><hr>
                     <button type="button" class="btn btn-light collapseQuizForm" style="width:100%">Question ${qfLength()}</button>
                     <div class="collapse">
@@ -203,27 +291,27 @@
                         <div class="form-group">
                             <label>Question Difficulty</label>
                             <select class="form-control questionDifficulty">
-                                <option>Easy</option>
-                                <option>Medium</option>
-                                <option>Hard</option>
+                                <option value="easy">Easy</option>
+                                <option value="medium">Medium</option>
+                                <option value="hard">Hard</option>
                             </select>
                         </div>
                         
                         <div class="form-group">
                             <label>Question Type</label>
                             <select class="form-control questionType">
-                                <option>Multiple Choice</option>
-                                <option>True or False</option>
+                                <option value="multiple_choice">Multiple Choice</option>
+                                <option value="true_false">True or False</option>
                             </select>
                         </div>
                         
                         <div class="form-group">
                             <label>Correct Answer</label>
                             <select class="form-control correctAnswer">
-                                <option>A</option>
-                                <option>B</option>
-                                <option>C</option>
-                                <option>D</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
                             </select>
                         </div>
                         
@@ -243,7 +331,9 @@
                         </div>
                     </div>
                 </div>`;
-            }
-        });
+        }
+
+        writeQuizEdit();
+    });
     </script>
 }
