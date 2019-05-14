@@ -29,7 +29,7 @@ namespace Qwiz.Models
         public string Topic { get; set; }
         [Required]
         public string Description { get; set; }
-        [MaxLength(64)]
+        [MaxLength(128)]
         public string ImagePath { get; set; }
         [Required]
         [RegularExpression("^(easy|medium|hard)$", ErrorMessage = "Difficulty type not accepted")]
