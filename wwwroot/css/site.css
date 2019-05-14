@@ -68,6 +68,7 @@ body {
   object-fit: cover;
 }
 
+
 .quizAvatar {
   vertical-align: middle;
   width: 186px;
@@ -106,7 +107,7 @@ body {
   object-fit: cover;
 }
 
-#Logocircle {
+#LogoCircle {
   position: relative;
   background-color: #2E3E4E;
   margin: 20px auto;
@@ -114,3 +115,4 @@ body {
   height: 300px;
   border-radius: 200px;
 }
+
