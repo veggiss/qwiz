@@ -25,4 +25,8 @@
     <Folder Include="wwwroot\images" />
   </ItemGroup>
 
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Views\Leaderboards\Index.cshtml" />
+  </ItemGroup>
+
 </Project>
