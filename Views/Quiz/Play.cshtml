@@ -1,36 +1,44 @@
-@model QuizViewModel
+@model Quiz
 
-<div id="app" style="margin: 0 auto; width: 555px;">
-    <div class="text-center">
-        <h1 class="display-4" style="font-size: 40px; width: 100%; text-align: center;">{{quiz.questions[page].questionText}}</h1>
-        <img style="display:block; margin:auto;" class="questionImgPrev" width="500" v-bind:src="quiz.questions[page].imagePath"/>
-    </div>
-    
-    <div id="progressBar" class="progress"></div>
-    
-    <div id="question">
-        <div class="multiple_choice">
-            <button id="btn_A" v-on:click="answer('A')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz.questions[page].alternatives[0]}}</button>
-            <button id="btn_B" v-on:click="answer('B')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz.questions[page].alternatives[1]}}</button>
-            <button id="btn_C" v-on:click="answer('C')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz.questions[page].alternatives[2]}}</button>
-            <button id="btn_D" v-on:click="answer('D')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">{{quiz.questions[page].alternatives[3]}}</button>
-        </div>
+<div class="w-100 pagination-centered">
+    <div id="app" class="jumbotron p-2">
+        <div id="questionContent">
+            <div v-if="state === 'intro'">
+                <intro
+                    v-bind:questions-length="quiz.questions.length"
+                    v-bind:category="quiz.category"
+                    v-bind:topic="quiz.topic"
+                    v-bind:description="quiz.description"
+                    v-bind:image-path="quiz.imagePath"
+                    v-bind:difficulty="quiz.difficulty"
+                    v-on:nextstate="onNextState">
+                </intro>
+            </div>
 
-        <div class="true_false" style="display: none">
-            <button id="btn_true" v-on:click="answer('true')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">True</button>
-            <button id="btn_false" v-on:click="answer('false')" type="button" class="btn btn-outline-dark" style="margin: 5px; width: 47.8%">False</button>
+            <div v-if="state === 'question'">
+                <question
+                    v-bind:type="question.questionType"
+                    v-bind:text="question.questionText"
+                    v-bind:last-question="lastQuestion"
+                    v-bind:is-authenticated="isAuthenticated"
+                    v-bind:questions-length="quiz.questions.length"
+                    v-bind:alternatives="question.alternatives"
+                    v-bind:image-path="question.imagePath"
+                    v-bind:xp-gained="xpGained"
+                    v-bind:timer="timer"
+                    v-on:answer="onAnswerQuestion"
+                    v-on:next="onNextQuestion"
+                    v-on:nextstate="onNextState">
+                </question>
+            </div>
         </div>
-    </div>
-    <button v-on:click="next" type="button" class="btn btn-dark" style="margin: 5px; width: 98%">Next</button>
-    
-    <div class="text-center">
-        <h1>{{resultMsg}}</h1>
     </div>
 </div>
 
 @section Scripts
 {
     <script>let model = @Json.Serialize(Model);</script>
+    <script src="~/js/quiz/vueQuestion.js"></script>
     <environment include="Development">
         <script src="~/js/quiz/play.js"></script>
     </environment>

@@ -21,8 +21,8 @@ namespace Qwiz.Data
             await um.CreateAsync(user, "Password1.");
             await db.SaveChangesAsync();
             
-            var question1 = new Question("multiple_choice", "What color is grass?", "[\"a\", \"b\", \"c\", \"d\"]", "A", "hard", "");
-            var question2 = new Question("true_false", "Is grass green?", null, "true", "easy", "");
+            var question1 = new Question("multiple_choice", "What color is grass?", "[\"a\", \"b\", \"c\", \"d\"]", "a", "A", "hard", "");
+            var question2 = new Question("true_false", "Is grass green?", null, "True", "true", "easy", "");
             
             await db.Questions.AddRangeAsync(question1, question2);
             await db.SaveChangesAsync();
@@ -33,9 +33,9 @@ namespace Qwiz.Data
             await db.SaveChangesAsync();
 
             // Get questions from open trivia DB API
-            for (var i = 0; i < 20; i++)
+            for (var i = 0; i < 5; i++)
             {
-                dynamic randomQuestion = await GetObjectFromApi("https://opentdb.com/", "api.php?amount=1");
+                dynamic randomQuestion = await GetObjectFromApi("https://opentdb.com/", "api.php?amount=10");
                 dynamic randomImage = await GetObjectFromApi("http://www.splashbase.co/", "api/v1/images/random");
                 
                 if (randomQuestion == null || randomImage == null) continue;
@@ -49,16 +49,16 @@ namespace Qwiz.Data
                     string text = System.Web.HttpUtility.HtmlDecode((string) q.question);
                     string qType = q.type;
                     string qDifficulty = q.difficulty;
+                    string answer = q.correct_answer;
                     Question question;
                     
                     if (qType == "multiple") {
-                        string alt = "[\"" + q.correct_answer + "\",\"" + q.incorrect_answers[0] + "\",\"" + q.incorrect_answers[1] + "\",\"" + q.incorrect_answers[2] + "\"]";
-                        question = new Question("multiple_choice", text, alt, "A", qDifficulty, "");
+                        string alt = "[\"" + answer + "\",\"" + q.incorrect_answers[0] + "\",\"" + q.incorrect_answers[1] + "\",\"" + q.incorrect_answers[2] + "\"]";
+                        question = new Question("multiple_choice", text, alt, answer, "A", qDifficulty, "");
                     } 
                     else
                     {
-                        string answer = q.correct_answer;
-                        question = new Question("true_false", text, null, answer.ToLower(), qDifficulty, "");
+                        question = new Question("true_false", text, null, answer, answer.ToLower(), qDifficulty, "");
                     }
                     
                     apiQuestions.Add(question);

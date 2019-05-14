@@ -1,0 +1,25 @@
+@model List<ApplicationUser>
+
+
+<h1 style="text-align: center; padding-bottom: 50px; padding-top: 40px">Top 100 players</h1> 
+<div class="table embed-responsive" style="width: 50%; margin-left: auto; margin-right: auto">
+           
+   <table id="leaderboard" class="table table-active">
+      <thead>
+      <tr class="bg-primary">
+         <th>Rank</th>
+         <th>User</th>
+         <th>Xp</th>
+      </tr>
+      </thead>
+      <tbody>
+      @foreach (var user in Model)
+      {
+         <tr id="leaderboardRow">
+            <th class="leaderboardColumn" style="vertical-align: middle; padding-left: 20px"></th>
+            <td class="leaderboardColumn"><img style="margin-right: 20px; vertical-align: middle" class="leaderboardavatar" src="https://images.immediate.co.uk/volatile/sites/4/2018/08/iStock_000044061370_Medium-fa5f8aa.jpg?quality=45&crop=5px,17px,929px,400px&resize=960,413"/>@user.UserName</td>
+            <td class="leaderboardColumn" style="vertical-align: middle">@user.Xp xp</td>
+         </tr>}
+      </tbody>
+   </table>
+</div>

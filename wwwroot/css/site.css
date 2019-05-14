@@ -68,12 +68,37 @@ body {
   object-fit: cover;
 }
 
+
 .quizAvatar {
   vertical-align: middle;
   width: 186px;
   height: 150px;
   object-fit: cover;
 }
+
+.leaderboardavatar {
+  vertical-align: middle;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+#leaderboard
+{
+  counter-reset: rowNumber;
+}
+
+#leaderboard #leaderboardRow> .leaderboardColumn:first-child
+{
+  counter-increment: rowNumber;
+}
+
+#leaderboard #leaderboardRow .leaderboardColumn:first-child::before
+{
+  content: counter(rowNumber);
+}
+
 
 .logo {
   vertical-align: middle;
@@ -83,7 +108,7 @@ body {
   object-fit: cover;
 }
 
-#Logocircle {
+#LogoCircle {
   position: relative;
   background-color: #2E3E4E;
   margin: 20px auto;
@@ -101,3 +126,10 @@ body {
   pointer-events: none;
 }
 
+.center-vertical {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}

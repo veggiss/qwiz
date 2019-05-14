@@ -1,71 +1,115 @@
-$(document).ready(() => {    
-    model.questions.forEach(e => {
-        if (e.questionType === "multiple_choice") e.alternatives = JSON.parse(e.alternatives);
-        else e.alternatives = ['', '', '', ''];
-    });
-
-    let app = new Vue({
+$(document).ready(() => {
+    new Vue({
         el: '#app',
         data: {
-            quiz: model,
-            guessed: false,
-            page: 0,
+            getBars: () => $("#progressBars").children(),
+            isAuthenticated: global.isAuthenticated,
+            lastQuestion: false,
             correctAnswers: 0,
-            resultMsg: '',
-            finished: false
-        },
-        mounted: function() {
-            this.renderQuestion();
+            answered: false,
+            state: 'intro',
+            question: null,
+            quiz: model,
+            xpGained: 0,
+            timer: 0,
+            page: 0
         },
         methods: {
-            answer: function(alt) {
-                let self = this;
-                if (!self.guessed && !self.finished) {
-                    let questionId = this.quiz.questions[this.page].id;
-                    let quizId = this.quiz.id;
-
-                    axios.get(`/api/answer?quizId=${quizId}&questionId=${questionId}&guess=${alt}`).then(function(response) {
-                        let answer = response.data.correctAnswer;
-                        $("#btn_" + answer).css("background-color", "#28a745");
-                        if (answer !== alt) self.wrongAnswer(alt);
-                        else self.correctAnswer();
-
-                        self.guessed = true;
+            onNextQuestion: function() {
+                if (this.page < this.quiz.questions.length - 1) {
+                    $("#question").find('button').removeClass('alert-danger bg-success');
+                    this.answered = false;
+                    this.page++;
+                    
+                    axios.get("/api/startTimer");
+                    this.updateQuestion();
+                    this.startTimer();
+                }
+            },
+            onAnswerQuestion: function(e) {
+                if (!this.answered) {
+                    let self = this;
+                    
+                    axios.get(util.apiUrl('/api/answer', {
+                        quizId: this.quiz.id,
+                        questionId: this.question.id,
+                        guess: e.target.innerHTML
+                    })).then(function(response) {
+                        let correctAlternative = response.data.correctAlternative;
+                        let wasNotCorrect = e.target.name !== correctAlternative;
+                        let bars = self.getBars();
+                        let bonus = response.data.bonus;
+                        let xp = response.data.xpGained;
+                        self.answered = true;
+                        self.stopTimer();
+                        $("#nextBtnCollapse").collapse('show');
+                        
+                        $("#question").find(`[name='${correctAlternative}']`).addClass('bg-success');
+                        
+                        if (wasNotCorrect) {
+                            $(e.target).addClass('alert-danger');
+                            $(bars[self.page]).addClass('bg-danger');
+                        } else {
+                            $(bars[self.page]).addClass('bg-success');
+                            self.addXpPoints(xp + bonus);
+                            self.correctAnswers++;
+                        }
                     });
                 }
             },
-            next: function() {
-                if (this.guessed) {
-                    if (this.page < this.quiz.questions.length - 1) {
-                        ['#btn_A', '#btn_B', '#btn_C', '#btn_D', '#btn_true', '#btn_false'].forEach(
-                            e => $(e).css("background-color", "transparent"));
-                        this.page++;
-                        this.guessed = false;
+            updateQuestion: function() {
+                this.question = this.quiz.questions[this.page];
+                this.question.alternatives = this.question.alternatives == null ? null : JSON.parse(this.question.alternatives);
+                if (this.quiz.questions.length - 1 <= this.page) this.lastQuestion = true;
+            },
+            onNextState: function(state) {
+                this.state = state;
+                
+                if (state === "question") {
+                    this.startTimer();
+                    axios.get("/api/startTimer");
+                } else if (state === "summary") {
+                    window.location.href = '/Quiz/Summary/' + this.quiz.id;
+                }
+            },
+            startTimer: function() {
+                $('#progressTimer').css('width', '100%');
+                $("#nextBtnCollapse").collapse('hide');
+                this.stopTimer();
+                
+                this.timer = 15;
+                let countDown = 0;
+                let self = this;
+
+                this.counter = setInterval(function () {
+                    countDown++;
+                    
+                    if (countDown <= 15) {
+                        self.timer--;
+                        let percent = (15 - countDown) / 15 * 100;
+                        $('#progressTimer').css('width', percent + '%');
                     } else {
-                        this.resultMsg = `${this.correctAnswers} of ${this.quiz.questions.length} questions correct!`;
-                        this.finished = true;
+                        self.stopTimer();
                     }
 
-                    this.renderQuestion();
-                }
+                }, 1000);
             },
-            renderQuestion: function() {
-                if (this.quiz.questions[this.page].questionType === "multiple_choice") {
-                    $(".multiple_choice").show();
-                    $(".true_false").hide();
-                } else {
-                    $(".multiple_choice").hide();
-                    $(".true_false").show();
-                }
+            stopTimer: function() {
+                if (this.counter !== null) clearInterval(this.counter);
             },
-            wrongAnswer: function(alt) {
-                $("#progressBar").append(`<div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" role="progressbar" style="width: ${1 / model.questions.length * 100}%"></div>`);
-                $("#btn_" + alt).css("background-color", "#dc3545");
-            },
-            correctAnswer: function() {
-                this.correctAnswers++;
-                $("#progressBar").append(`<div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" style="width: ${1 / model.questions.length * 100}%"></div>`);
+            addXpPoints: function(xp) {
+                let self = this;
+                $({count: self.xpGained}).animate({count: (self.xpGained + xp)}, {
+                    duration:2000,
+                    easing:'swing',
+                    step: function() {
+                        self.xpGained = Math.floor(this.count);
+                    }
+                });
             }
+        },
+        created: function () {
+            this.updateQuestion();
         }
-    });
+    })
 });
