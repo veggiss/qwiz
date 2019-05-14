@@ -36,50 +36,10 @@ namespace Qwiz.Controllers
             _um = um;
         }
 
-        // TODO: Return startpage if page is null and endpage if page exceeds questions length
-        [HttpGet("getQuestion")]
-        public async Task<IActionResult> GetQuestion(int? id, int? page)
-        {
-            if (id == null) return BadRequest();
-            
-            var quiz = await _db.Quizzes
-                .Include(q => q.Questions)
-                .SingleOrDefaultAsync(q => q.Id == id);
-            
-            if (quiz == null) return BadRequest();
-            if (page == null || page > quiz.Questions.Count) 
-                return PartialView("Play/_QuestionIntroPartial", quiz);
-            
-            var question = quiz.Questions.ElementAt((int) page);
-            if (question == null) return BadRequest();
-
-            return PartialView("Play/_QuestionPartial", question);
-        }
-
-        // TODO: Costly operation?
-        [HttpGet("getQuizSummary")]
-        [Authorize]
-        public async Task<IActionResult> GetQuizSummary(int? id)
-        {
-            if (id == null) return BadRequest();
-
-            var user = await _db.Users
-                .Include(u => u.QuizzesTaken)
-                .ThenInclude(q => q.Quiz)
-                .SingleOrDefaultAsync(u => u.Id == _um.GetUserId(User));
-            
-            if (user == null) return BadRequest();
-
-            var quizTaken = user.QuizzesTaken.Find(q => q.Quiz.Id == id);
-            if (quizTaken == null) return BadRequest();
-
-            return PartialView("Play/_QuizSummaryPartial", quizTaken);
-        }
-
         [HttpGet("getQuizList")]
         public async Task<IActionResult> GetQuizList(string username, int page, int size, string type, int? categoryIndex, string difficulty, string orderBy, string search)
         {
-            if (page < 1 || size > 20) return BadRequest();
+            if (page < 1 || (size > 20 || size < 0)) return BadRequest();
 
             if (type == "history" && username != null)
             {
@@ -91,7 +51,7 @@ namespace Qwiz.Controllers
                     .Include(q => q.Quiz)
                     .ThenInclude(q => q.Owner).ToListAsync();
                 
-                var entries = query.Skip((page - 1) * size).Take(size).ToList();
+                var entries    = query.Skip((page - 1) * size).Take(size).ToList();
                 var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
                 
                 return PartialView("Profile/_HistoryCardPartial", new HistoryCardModel(entries, totalPages));
@@ -104,8 +64,8 @@ namespace Qwiz.Controllers
                     .Where(q => q.Owner.UserName == username).ToListAsync();
                 
                 var partialString = (await _um.GetUserAsync(User)).UserName == username ? "Profile/_MyQuizPartial" : "Quiz/_QuizCardPartial";
-                var entries = query.Skip((page - 1) * size).Take(size).ToList();
-                var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
+                var entries       = query.Skip((page - 1) * size).Take(size).ToList();
+                var totalPages    = (int) Math.Ceiling(decimal.Divide(query.Count, size));
                 
                 return PartialView(partialString, new QuizCardModel(entries, totalPages));
             }
@@ -113,22 +73,18 @@ namespace Qwiz.Controllers
             if (type == "category")
             {
                 var category =  CategoryFromIndex(categoryIndex);
-                var query = await _db.Quizzes
-                    .Include(q => q.Owner).ToListAsync();
+                var query = await _db.Quizzes.Include(q => q.Owner).ToListAsync();
 
-                if (category != null) 
-                    query = query.Where(q => q.Category == category).ToList();
-                
-                if (difficulty != null) 
-                    query = query.Where(q => q.Difficulty == difficulty).ToList();
+                if (category != null)        query = query.Where(q => q.Category == category).ToList();
+                else if (difficulty != null) query = query.Where(q => q.Difficulty == difficulty).ToList();
                 
                 if (search != null)
                 {
-                    var searchArr = Regex.Split(search.ToLower(), @"\s+").Where(s => s != string.Empty);
-                    var queryTopic = query.Where(q => searchArr.Any(q.Topic.ToLower().Contains)).ToList();
-                    var queryUserName = query.Where(q => searchArr.Any(q.Owner.UserName.ToLower().Contains)).ToList();
+                    var searchArr        = Regex.Split(search.ToLower(), @"\s+").Where(s => s != string.Empty);
+                    var queryUserName    = query.Where(q => searchArr.Any(q.Owner.UserName.ToLower().Contains)).ToList();
                     var queryDescription = query.Where(q => searchArr.Any(q.Description.ToLower().Contains)).ToList();
-                    var queryCategory = query.Where(q => searchArr.Any(q.Category.ToLower().Contains)).ToList();
+                    var queryCategory    = query.Where(q => searchArr.Any(q.Category.ToLower().Contains)).ToList();
+                    var queryTopic       = query.Where(q => searchArr.Any(q.Topic.ToLower().Contains)).ToList();
 
                     List<Quiz> searchList = new List<Quiz>();
                     searchList.AddRange(queryTopic);
@@ -140,9 +96,9 @@ namespace Qwiz.Controllers
                 
                 if (orderBy != null)
                 {
-                    if (orderBy == "views") query = query.OrderByDescending(q => q.Views).ToList();
-                    if (orderBy == "upvotes") query = query.OrderByDescending(q => q.Upvotes).ToList();
-                    if (orderBy == "recent") query = query.OrderByDescending(q => q.CreationDate).ToList();
+                    if (orderBy == "views")        query = query.OrderByDescending(q => q.Views).ToList();
+                    else if (orderBy == "upvotes") query = query.OrderByDescending(q => q.Upvotes).ToList();
+                    else if (orderBy == "recent")  query = query.OrderByDescending(q => q.CreationDate).ToList();
                 }
                 
                 var entries = query.Skip((page - 1) * size).Take(size).ToList();
@@ -153,34 +109,60 @@ namespace Qwiz.Controllers
 
             return BadRequest();
         }
-        
-        [HttpGet("answer")]
-        public async Task<IActionResult> CheckAnswer(int quizId, int questionId, string guess)
+
+        // TODO: Would it still be rest if we check if the user HAS started a question here? As is, the user can tamp stamp themselves
+        [HttpGet("startTimer")]
+        [Authorize]
+        public async void StartTimer()
         {
+            var user = await _um.GetUserAsync(User);
+            
+            if (user != null) {
+                user.LastQuestionStarted = DateTime.Now;
+                await _um.UpdateAsync(user);
+            }
+        }
+
+        [HttpGet("answer")]
+        public async Task<IActionResult> CheckAnswer(int? quizId, int? questionId, string guess)
+        {
+            if (quizId == null || questionId == null || guess == null) return BadRequest();
+            
             var question = await _db.Questions.FindAsync(questionId);
-            if (question == null) return BadRequest("Couldn't find that question");
+            if (question == null) return BadRequest();
 
             var userId = _um.GetUserId(User);
+            var xpGained = 0;
+            var bonus = 0;
             
             if (userId != null) {
                 var user = await _db.Users
                     .Include(u => u.QuestionsTaken)
+                    .ThenInclude(q => q.Question)
                     .Include(u => u.QuizzesTaken)
                     .ThenInclude(q => q.Quiz)
                     .SingleOrDefaultAsync(u => u.Id == userId);
-
-                if (user.QuestionsTaken.Find(q => q.Question == question) == null)
+                
+                if (!user.QuestionsTaken.Exists(q => q.Question.Id == questionId)) 
                 {
-                    var answeredCorrectly = guess == question.CorrectAnswer;
-                    AddQuestionTaken(user, question, answeredCorrectly);
-                    if (answeredCorrectly)
-                        AddExperience(user, XpGainedFromQuestion(question.Difficulty));
+                    var answeredCorrectly = string.Equals(guess, question.CorrectAnswer, StringComparison.CurrentCultureIgnoreCase);
+                    var timer = DateTime.Now - user.LastQuestionStarted;
+                    var timerSec = (int) Math.Round(timer.TotalSeconds);
+                    
+                    if (answeredCorrectly && timerSec >= 0 && timerSec <= 15)
+                    {
+                        xpGained = XpGainedFromQuestion(question.Difficulty);
+                        bonus = (int) (xpGained * (((15f - timerSec) / 15f * 100f) / 100f));
+                        AddExperience(user, xpGained + bonus);
+                    }
+                    
+                    AddQuestionTaken(user, question, answeredCorrectly, xpGained, bonus, timer, guess);
                 }
-
+                    
                 UpdateQuizTaken(user, quizId, question);
             }
             
-            return Ok(new {correctAnswer = question.CorrectAnswer});
+            return Ok(new {correctAlternative = question.CorrectAlternative, xpGained, bonus});
         }
         
         // TODO: Change to a websocket solution?
@@ -192,7 +174,7 @@ namespace Qwiz.Controllers
 
             if (user != null)
             {
-                if (user.LastActivity.AddMinutes(2) < DateTime.Now)
+                if (user.LastActivity.AddMinutes(4) < DateTime.Now)
                 {
                     user.LastActivity = DateTime.Now;
                     await _um.UpdateAsync(user);
@@ -220,12 +202,8 @@ namespace Qwiz.Controllers
 
         [HttpPost("update")]
         [Authorize]
-        // TODO: Should be tested for a possible way to modify static properties
-        public async Task<IActionResult> UpdateQuiz([FromBody] Quiz quizForm)
+        public async Task<IActionResult> UpdateQuiz([FromBody][Bind("Topic", "Category", "Description", "ImagePath", "Questions")] Quiz quizForm)
         {
-            // Unbinds properties from the model, these should not be touched
-            Unbind(ModelState, "CreationDate", "Views", "Upvotes", "Owner");
-            
             if (!ModelState.IsValid) return BadRequest();
             
             var quiz = await _db.Quizzes
@@ -237,11 +215,11 @@ namespace Qwiz.Controllers
             
             try
             {
-                quiz.Topic = quizForm.Topic;
-                quiz.Category  = quizForm.Category;
+                quiz.Topic        = quizForm.Topic;
+                quiz.Category     = quizForm.Category;
                 quiz.Description  = quizForm.Description;
-                quiz.ImagePath  = quizForm.ImagePath;
-                quiz.Questions = quizForm.Questions;
+                quiz.ImagePath    = quizForm.ImagePath;
+                quiz.Questions    = quizForm.Questions;
                 
                 await _db.SaveChangesAsync();
             } catch (DbUpdateConcurrencyException) {
@@ -316,14 +294,15 @@ namespace Qwiz.Controllers
                 value = 100;
             else if (type == "medium")
                 value = 150;
-            else if (type == "hard") value = 200;
+            else if (type == "hard") 
+                value = 200;
 
             return value;
         }
 
-        private async void AddQuestionTaken(ApplicationUser user, Question question, bool answeredCorrectly)
+        private async void AddQuestionTaken(ApplicationUser user, Question question, bool answeredCorrectly, int xpGained, int bonus, TimeSpan timer, string answer)
         {
-            user.QuestionsTaken.Add(new QuestionTaken(question, answeredCorrectly));
+            user.QuestionsTaken.Add(new QuestionTaken(question, answeredCorrectly, xpGained, bonus, timer, answer));
             await _um.UpdateAsync(user);
         }
         
@@ -341,7 +320,7 @@ namespace Qwiz.Controllers
         }
 
         // TODO: can we optimize these queries?
-        private async void UpdateQuizTaken(ApplicationUser user, int id, Question question)
+        private async void UpdateQuizTaken(ApplicationUser user, int? id, Question question)
         {
             Quiz quiz = await _db.Quizzes
                 .Include(m => m.Questions)
@@ -351,6 +330,7 @@ namespace Qwiz.Controllers
             if (!quiz.Questions.Exists(q => q == question)) return;
             if (user.QuizzesTaken.Exists(q => q.Quiz == quiz)) return;
 
+            List<QuestionTaken> questionsTaken = new List<QuestionTaken>();
             var correctAnswers = 0;
             var score = 0;
             
@@ -360,11 +340,12 @@ namespace Qwiz.Controllers
                 if (questionTaken == null) return;
                 if (questionTaken.AnsweredCorrectly) correctAnswers++;
                 score += XpGainedFromQuestion(questionTaken.Question.Difficulty);
+                questionsTaken.Add(questionTaken);
             }
             
-            user.QuizzesTaken.Add(new QuizTaken(quiz, correctAnswers, score));
+            user.QuizzesTaken.Add(new QuizTaken(quiz, correctAnswers, score, questionsTaken));
             user.QuizzesTakenCount++;
-            await _um.UpdateAsync(user);;
+            await _um.UpdateAsync(user);
         }
 
         public static string CategoryFromIndex(int? id)
@@ -381,7 +362,7 @@ namespace Qwiz.Controllers
                 "Entertainment: Television",             //5
                 "Entertainment: Video Games",            //6
                 "Entertainment: Board Games",            //7
-                "Science &amp; Nature",                  //8
+                "Science & Nature",                      //8
                 "Science: Computers",                    //9
                 "Science: Mathematics",                  //10
                 "Mythology",                             //11

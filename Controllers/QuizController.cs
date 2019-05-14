@@ -30,18 +30,18 @@ namespace Qwiz.Controllers
             return View(await quizzes.ToListAsync());
         }
 
-        public IActionResult Play(int id)
+        public async Task<IActionResult> Play(int? id)
         {
-            //var quizzes = await _db.Quizzes
-            //    .Include(c => c.Questions)
-            //    .FirstOrDefaultAsync(m => m.Id == id);
-            //if (quizzes == null) return NotFound();
+            if (id == null) return NotFound();
             
-            //var questions = quizzes.Questions;
-            //if (questions == null) return NotFound();
-            //questions.ForEach(item => item.CorrectAnswer = "");
+            var quiz = await _db.Quizzes
+                .Include(c => c.Questions)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (quiz == null) return NotFound();
             
-            return View(id);
+            quiz.Questions.ForEach(item => item.CorrectAnswer = "");
+            
+            return View(quiz);
         }
 
         public IActionResult Create()
@@ -50,14 +50,39 @@ namespace Qwiz.Controllers
         }
 
         [Authorize]
-        public async Task<IActionResult> Edit(int id)
+        public async Task<IActionResult> Edit(int? id)
         {
+            if (id == null) return NotFound();
+            
             Quiz quiz = await _db.Quizzes
                 .Include(q => q.Questions)
                 .FirstOrDefaultAsync(q => q.Id == id);
             if (quiz == null) return NotFound();
             
             return View("../Quiz/Create", quiz);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Summary(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var user = await _db.Users
+                .Include(u => u.QuizzesTaken)
+                .ThenInclude(q => q.QuestionsTaken)
+                .Include(u => u.QuizzesTaken)
+                .ThenInclude(q => q.Quiz)
+                .ThenInclude(q => q.Questions)
+                .SingleOrDefaultAsync(u => u.Id == _um.GetUserId(User));
+            
+            if (user != null) {
+                var quizTaken = user.QuizzesTaken.Find(q => q.Quiz.Id == id);
+                if (quizTaken == null) return NotFound();
+
+                return View(quizTaken);
+            }
+            
+            return BadRequest();
         }
     }
 }
