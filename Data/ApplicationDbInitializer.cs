@@ -33,7 +33,7 @@ namespace Qwiz.Data
             await db.SaveChangesAsync();
 
             // Get questions from open trivia DB API
-            for (var i = 0; i < 20; i++)
+            for (var i = 0; i < 1; i++)
             {
                 dynamic randomQuestion = await GetObjectFromApi("https://opentdb.com/", "api.php?amount=1");
                 dynamic randomImage = await GetObjectFromApi("http://www.splashbase.co/", "api/v1/images/random");
