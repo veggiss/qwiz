@@ -1,4 +1,4 @@
-﻿@model List<Quiz>
+﻿@model HomeViewModel
 @{
     ViewData["Title"] = "Home Page";
 }
@@ -58,15 +58,23 @@
       <span class="carousel-control-next-icon" aria-hidden="true"></span>
       <span class="sr-only">Next</span>
     </a>
-    
-    
   </div>
 </div>
 
 
-  @foreach (var quiz in Model)
-  {
-    @await Html.PartialAsync("Quiz/_QuizCardSinglePartial", quiz)
-  }
+<div class="container" style="text-align: center" style="background-color:pink;">
+  <div class="row">
+    <div class="col-sm-6" style="color: #FBC214">
+      @Model.UserCount
+      <h6>Registered users</h6>
+    </div>
 
+    <div class="col-sm-6" style="color: #FBC214">
+      @Model.QuizCount
+      <h6>Registered quizzes</h6>
+    </div>
+
+    
+  </div>
+</div>
 

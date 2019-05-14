@@ -21,13 +21,13 @@ namespace Qwiz.Controllers
         
         public async Task<IActionResult> Index()
         {
-            var quizzes = _db.Quizzes
-                .Include(q => q.Owner)
-                .Skip(0).Take(3);
+            var quizzes = await _db.Quizzes.CountAsync();
+            var users = await _db.Users.CountAsync();
+           
             
-            return View(await quizzes.ToListAsync());
+            return View(new HomeViewModel(quizzes, users)); 
         }
-
+        
         public IActionResult Privacy()
         {
             return View();
