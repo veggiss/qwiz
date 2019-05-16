@@ -142,7 +142,11 @@ $(document).ready(function() {
                 if (response.status === 200) {
                     window.location.href = '/Profile';
                 }
-            }).catch(e => console.log(e));
+                
+                console.log("testingsss", response);
+            }).catch(function(e) {
+                util.openModal(e.response.data);
+            });
         } else {
             $(".alert").show().delay(2000).fadeOut();
         }

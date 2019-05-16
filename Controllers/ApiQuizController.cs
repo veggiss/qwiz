@@ -206,18 +206,18 @@ namespace Qwiz.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateQuiz([FromBody][Bind("Topic", "Category", "Description", "ImagePath", "Questions")] Quiz quizForm)
         {
-            if (!ModelState.IsValid) return BadRequest();
+            if (!ModelState.IsValid) return BadRequest("Model state not valid!");
             
             var quiz = await _db.Quizzes
                 .Include(q => q.Questions)
                 .FirstOrDefaultAsync(q => q.Id == quizForm.Id);
             
-            if (quiz == null) return BadRequest();
-            if (quiz.OwnerId != _um.GetUserId(User)) return BadRequest();
-            if (!QuestionsValid(quiz.Questions)) return BadRequest();
+            if (quiz == null) return BadRequest("Quiz not found!");
+            if (quiz.OwnerId != _um.GetUserId(User)) return BadRequest("You are not the owner of this quiz!");
+            if (!QuestionsValid(quiz.Questions)) return BadRequest("Question format not valid!");
 
             if (await _db.QuizzesTaken.AnyAsync(q => q.Quiz == quiz))
-                return BadRequest(new {error = "You cannot edit this quiz because someone has already taken it. You can however delete it, and create a new."});
+                return BadRequest("You cannot edit this quiz because someone has already taken it. You can however delete it, and create a new.");
             
             // TODO: Questions from request gets added and replaced, even unedited once. Fix Plz
             try
@@ -230,7 +230,7 @@ namespace Qwiz.Controllers
                 
                 await _db.SaveChangesAsync();
             } catch (DbUpdateConcurrencyException) {
-                return BadRequest();
+                return BadRequest("Woopsie! Database error! :(");
             }
             
             return Ok();
