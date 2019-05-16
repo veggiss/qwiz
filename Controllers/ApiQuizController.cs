@@ -234,39 +234,29 @@ namespace Qwiz.Controllers
         
         [HttpDelete("delete")]
         [Authorize]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int? id)
         {
-            // TODO: Fix relation for quizzes and questions taken
-            var user = await _db.Users
-                .Include(u => u.QuestionsTaken)
-                .ThenInclude(u => u.Question)
-                .Include(u => u.QuizzesTaken)
-                .ThenInclude(q => q.Quiz)
-                .SingleOrDefaultAsync(u => u.Id == _um.GetUserId(User));
-
-            if (user == null) return BadRequest();
+            var user = await _um.GetUserAsync(User);
+            if (id == null && user == null) return BadRequest();
             
             var quiz = await _db.Quizzes
                 .Include(q => q.Questions)
                 .Include(q => q.Owner)
-                .FirstOrDefaultAsync(q => q.Id == id && q.Owner == user);
+                .Where(q => q.Owner == user)
+                .FirstOrDefaultAsync(q => q.Id == id);
 
             if (quiz == null) return BadRequest();
 
-            var quizTaken = user.QuizzesTaken.Find(q => q.Quiz == quiz);
-            user.QuizzesTaken.Remove(quizTaken);
+            var quizTaken = await _db.QuizzesTaken
+                .Include(q => q.QuestionsTaken)
+                .Where(q => q.QuizId == id).ToListAsync();
+            var questionsTaken = quizTaken.SelectMany(q => q.QuestionsTaken);
 
-            foreach (var question in quiz.Questions)
-            {
-                var questionTaken = user.QuestionsTaken.Find(q => q.Question == question);
-                user.QuestionsTaken.Remove(questionTaken);
-            }
-            
-            await _um.UpdateAsync(user);
-            
+            _db.QuestionsTaken.RemoveRange(questionsTaken);
+            _db.QuizzesTaken.RemoveRange(quizTaken);
             _db.Questions.RemoveRange(quiz.Questions);
             _db.Quizzes.Remove(quiz);
-            
+                
             await _db.SaveChangesAsync();
 
             return Ok();
@@ -305,7 +295,9 @@ namespace Qwiz.Controllers
 
         private async void AddQuestionTaken(ApplicationUser user, Question question, bool answeredCorrectly, int xpGained, int bonus, TimeSpan timer, string answer)
         {
-            user.QuestionsTaken.Add(new QuestionTaken(question, answeredCorrectly, xpGained, bonus, timer, answer));
+            var questionTaken = new QuestionTaken(question, answeredCorrectly, xpGained, bonus, timer, answer);
+            await _db.QuestionsTaken.AddAsync(questionTaken);
+            user.QuestionsTaken.Add(questionTaken);
             await _um.UpdateAsync(user);
         }
         
@@ -332,7 +324,7 @@ namespace Qwiz.Controllers
             if (quiz == null) return;
             if (!quiz.Questions.Exists(q => q == question)) return;
             if (user.QuizzesTaken.Exists(q => q.Quiz == quiz)) return;
-
+            // TODO: Might get these from DB
             List<QuestionTaken> questionsTaken = new List<QuestionTaken>();
             var correctAnswers = 0;
             var score = 0;
@@ -345,7 +337,7 @@ namespace Qwiz.Controllers
                 score += XpGainedFromQuestion(questionTaken.Question.Difficulty);
                 questionsTaken.Add(questionTaken);
             }
-
+            
             var quizTaken = new QuizTaken(quiz, correctAnswers, score, questionsTaken);
             await _db.QuizzesTaken.AddAsync(quizTaken);
             
