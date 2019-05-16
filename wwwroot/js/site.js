@@ -10,7 +10,12 @@ let util = {
         });
 
         return url;
+    },
+    openModal: function (text) {
+        $("#globalModalMsg").text(text);
+        $("#modalGlobal").modal()
     }
+    
 };
 
 // Global vars goes here
