@@ -17,11 +17,14 @@ namespace Qwiz.Models
             Topic = topic;
             Description = description;
             Difficulty = difficulty;
+            OwnerUsername = user.UserName;
         }
         
         public int Id { get; set; }
         public string OwnerId { get; set; }
+        public string OwnerUsername { get; set; }
         public ApplicationUser Owner { get; set; }
+        [Required]
         public List<Question> Questions { get; set; }
         [Required]
         public string Category { get; set; }
@@ -37,5 +40,6 @@ namespace Qwiz.Models
         public int Upvotes { get; set; }
         public int Views { get; set; }
         public DateTime CreationDate { get; set; } = DateTime.Now;
+        public string CreationDateFormatted { get; set; } = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
     }
 }

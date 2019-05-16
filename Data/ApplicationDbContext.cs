@@ -13,5 +13,6 @@ namespace Qwiz.Data
         
         public DbSet<Quiz> Quizzes { get; set; }
         public DbSet<Question> Questions { get; set; }
+        public DbSet<QuizTaken> QuizzesTaken { get; set; }
     }
 }

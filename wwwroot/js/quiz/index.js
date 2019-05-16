@@ -5,7 +5,10 @@ $(document).ready(function () {
     let app = new Vue({
         el: '#tabContent',
         data: {
-            categoriesPageCount: 1,
+            searchEntries: {
+                entries: [],
+                pages: 0
+            }
         },
         mounted: function() {
             this.categoriesCallback(1);
@@ -25,19 +28,14 @@ $(document).ready(function () {
                     orderBy: $("#orderBySelect option:selected").attr("value"),
                     search: getSearchText($("#searchInput").val())
                 })).then(function(response) {
-                    let pageCount = self.renderList('#categoriesList', response.data);
-                    if (pageCount > 1) self.categoriesPageCount = pageCount;
+                    self.searchEntries.entries = response.data.entries;
+                    self.searchEntries.pages = response.data.pages;
                 });
             },
             searchCallback: function(e) {
                 if (e.keyCode === 13) {
                     this.categoriesCallback(1);
                 }
-            },
-            renderList: function(id, data) {
-                $(id).empty();
-                let result = $(id).html(data);
-                return parseInt($(result.find(".totalPages")[0]).attr("amount"));
             }
         }
     });

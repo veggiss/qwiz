@@ -15,7 +15,7 @@ let util = {
 
 // Global vars goes here
 let global = {
-    quizCardAmount: 6,
+    quizCardAmount: 12,
     wakeUpTimer: 1000 * 60 * 5,
     isAuthenticated: false
 };

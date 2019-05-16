@@ -37,14 +37,14 @@ $(document).ready(() => {
                     })).then(function(response) {
                         let correctAlternative = response.data.correctAlternative;
                         let wasNotCorrect = e.target.name !== correctAlternative;
-                        let bars = self.getBars();
                         let bonus = response.data.bonus;
+                        let bars = self.getBars();
                         let xp = response.data.xpGained;
                         self.answered = true;
                         self.stopTimer();
                         $("#nextBtnCollapse").collapse('show');
-                        
-                        $("#question").find(`[name='${correctAlternative}']`).addClass('bg-success');
+                        $("#question").find(`button[name='${correctAlternative}']`).addClass('bg-success');
+                        console.log(correctAlternative);
                         
                         if (wasNotCorrect) {
                             $(e.target).addClass('alert-danger');

@@ -6,130 +6,119 @@
     var away = Model.LastActivity > DateTime.Now.AddMinutes(-10);
 }
 
-<div class="container">
-    <div class="row text-center">
-        <div class="col-sm">
-            <div class="d-flex flex-column">
-                <h1>Level</h1>
-                <h1>@Model.Level</h1>
-            </div>
+<div class="row text-center">
+    <div class="col">
+        <div class="d-flex flex-column">
+            <h1>Level</h1>
+            <h1>@Model.Level</h1>
         </div>
-        <div class="col-sm">
-            <div class="d-flex flex-column">
-                <img class="avatar mx-auto d-block m-2" alt="" src="https://images.immediate.co.uk/volatile/sites/4/2018/08/iStock_000044061370_Medium-fa5f8aa.jpg?quality=45&crop=5px,17px,929px,400px&resize=960,413">
-                <span class="badge badge-pill badge-light">@Model.UserName (@Model.FirstName @Model.LastName)</span>
-                @{
-                    if (online)
-                    {
-                        <t class="badge badge-pill badge-success">Online</t>
-                    }
-                    else if (away)
-                    {
-                        <t class="badge badge-pill badge-warning">Away</t>
-                    }
-                    else
-                    {
-                        <t class="badge badge-pill badge-danger">Offline (Last seen: @Model.LastActivity)</t>
-                    }
+    </div>
+    <div class="col">
+        <div class="d-flex flex-column">
+            <img class="avatar mx-auto d-block m-2" alt="" src="https://images.immediate.co.uk/volatile/sites/4/2018/08/iStock_000044061370_Medium-fa5f8aa.jpg?quality=45&crop=5px,17px,929px,400px&resize=960,413">
+            <span class="badge badge-pill badge-light">@Model.UserName (@Model.FirstName @Model.LastName)</span>
+            @{
+                if (online)
+                {
+                    <t class="badge badge-pill badge-success">Online</t>
                 }
-            </div>
-        </div>
-        <div class="col-sm">
-            <h1>Quizzes taken</h1>
-            <h1>@Model.QuizzesTakenCount</h1>
+                else if (away)
+                {
+                    <t class="badge badge-pill badge-warning">Away</t>
+                }
+                else
+                {
+                    <t class="badge badge-pill badge-danger">Offline (Last seen: @Model.LastActivity)</t>
+                }
+            }
         </div>
     </div>
-   
-    <div class="progress position-relative m-1" style="height: 29px;">
-        <div class="progress-bar" role="progressbar"></div>
-        <h4 class="justify-content-center d-flex position-absolute w-100">
-            @xp / @xpNeeded
-        </h4>
+    <div class="col">
+        <h1>Quizzes taken</h1>
+        <h1>@Model.QuizzesTakenCount</h1>
+    </div>
+</div>
+
+<div class="progress position-relative m-1" style="height: 29px;">
+    <div class="progress-bar" role="progressbar"></div>
+    <h4 class="justify-content-center d-flex position-absolute w-100">
+        @xp / @xpNeeded
+    </h4>
+</div>
+
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="history-tab" data-toggle="tab" href="#history" role="tab" aria-controls="history" aria-selected="true">History</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="myQuizzes-tab" data-toggle="tab" href="#myQuizzes" role="tab" aria-controls="myQuizzes" aria-selected="false">Quizzes by @Model.UserName</a>
+        </li>
+        <li>
+            <a class="nav-link" id="badges-tab" data-toggle="tab" href="#badges" role="tab" aria-controls="badges" aria-selected="false">Badges</a>
+        </li>
+    </ul>
+
+<div class="tab-content justify-content-center" id="tabContent">
+    <div class="tab-pane fade show active" id="history" role="tabpanel" aria-labelledby="history-tab">
+        <div class="w-100 d-flex justify-content-center">
+            <div class="w-100">
+                <quizcard 
+                    v-for="(quizTaken, index) in historyList.entries"
+                    v-bind:show-summary="historyList.showSummary"
+                    v-bind:quiz="quizTaken.quiz"
+                    v-bind:quiz-taken="quizTaken"
+                    v-bind:key="index">
+                </quizcard>
+                
+                <paginate class="w-100 d-flex justify-content-center"
+                    :page-count="historyList.pages"
+                    :page-range="5"
+                    :margin-pages="0"
+                    :click-handler="historyListCallback"
+                    :prev-text="'Prev'"
+                    :next-text="'Next'"
+                    :container-class="'pagination'"
+                    :page-class="'page-item'"
+                    :page-link-class="'page-link'"
+                    :next-link-class="'page-link'"
+                    :prev-link-class="'page-link'"
+                    :no-li-surround="false"
+                    :first-last-button="true">
+                </paginate>
+            </div>
+        </div>
     </div>
     
-    <div>
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" id="history-tab" data-toggle="tab" href="#history" role="tab" aria-controls="history" aria-selected="true">History</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="myQuizzes-tab" data-toggle="tab" href="#myQuizzes" role="tab" aria-controls="myQuizzes" aria-selected="false">Quizzes by @Model.UserName</a>
-            </li>
-            <li>
-                <a class="nav-link" id="badges-tab" data-toggle="tab" href="#badges" role="tab" aria-controls="badges" aria-selected="false">Badges</a>
-            </li>
-        </ul>
+    <div class="tab-pane fade" id="myQuizzes" role="tabpanel" aria-labelledby="myQuizzes-tab">
+        <div class="d-flex justify-content-center">
+            <div class="w-100">
+                <quizcard 
+                    v-for="(quiz, index) in myQuizzes.entries"
+                    v-bind:quiz="quiz"
+                    v-bind:key="index"
+                    v-bind:can-edit="myQuizzes.canEdit">
+                </quizcard>
+                
+                <paginate class="w-100 d-flex justify-content-center"
+                    :page-count="myQuizzes.pages"
+                    :page-range="5"
+                    :margin-pages="0"
+                    :click-handler="myQuizzesCallback"
+                    :prev-text="'Prev'"
+                    :next-text="'Next'"
+                    :container-class="'pagination'"
+                    :page-class="'page-item'"
+                    :page-link-class="'page-link'"
+                    :next-link-class="'page-link'"
+                    :prev-link-class="'page-link'"
+                    :no-li-surround="false"
+                    :first-last-button="true">
+                </paginate>
+            </div>
+        </div>
     </div>
     
-    <div class="tab-content justify-content-center" id="tabContent">
-        <div class="tab-pane fade show active" id="history" role="tabpanel" aria-labelledby="history-tab">
-            <div class="w-100 d-flex justify-content-center">
-                <div id="historyList" style="width: 996px;"></div>
-            </div>
-            <template id="historyPaginate">
-                <paginate class="w-100 d-flex justify-content-center"
-                          :page-count="historyPageCount"
-                          :page-range="5"
-                          :margin-pages="0"
-                          :click-handler="historyCallback"
-                          :prev-text="'Prev'"
-                          :next-text="'Next'"
-                          :container-class="'pagination'"
-                          :page-class="'page-item'"
-                          :page-link-class="'page-link'"
-                          :next-link-class="'page-link'"
-                          :prev-link-class="'page-link'"
-                          :no-li-surround="false"
-                          :first-last-button="true">
-                </paginate>
-            </template>
-        </div>
-        
-        <div class="tab-pane fade" id="myQuizzes" role="tabpanel" aria-labelledby="myQuizzes-tab">
-            <div class="w-100 d-flex justify-content-center">
-                <div id="myQuizzesList" style="width: 996px;"></div>
-            </div>
-            <template>
-                <paginate class="w-100 d-flex justify-content-center"
-                          :page-count="myQuizzesPageCount"
-                          :page-range="5"
-                          :margin-pages="0"
-                          :click-handler="myQuizzesCallback"
-                          :prev-text="'Prev'"
-                          :next-text="'Next'"
-                          :container-class="'pagination'"
-                          :page-class="'page-item'"
-                          :page-link-class="'page-link'"
-                          :next-link-class="'page-link'"
-                          :prev-link-class="'page-link'"
-                          :no-li-surround="false"
-                          :first-last-button="true">
-                </paginate>
-            </template>
-        </div>
-        
-        <div class="tab-pane fade" id="badges" role="tabpanel" aria-labelledby="badges-tab">
-            <div class="w-100 d-flex justify-content-center">
-                <div id="badgesList" style="width: 996px;"></div>
-            </div>
-            <template id="badgesPaginate">
-                <paginate class="w-100 d-flex justify-content-center"
-                          :page-count="badgesPageCount"
-                          :page-range="5"
-                          :margin-pages="0"
-                          :click-handler="badgesCallback"
-                          :prev-text="'Prev'"
-                          :next-text="'Next'"
-                          :container-class="'pagination'"
-                          :page-class="'page-item'"
-                          :page-link-class="'page-link'"
-                          :next-link-class="'page-link'"
-                          :prev-link-class="'page-link'"
-                          :no-li-surround="false"
-                          :first-last-button="true">
-                </paginate>
-            </template>
-        </div>
+    <div class="tab-pane fade" id="badges" role="tabpanel" aria-labelledby="badges-tab">
     </div>
 </div>
 
@@ -142,6 +131,7 @@
             xp: '@Model.Xp'           
         };
     </script>
+    <script src="~/js/vueQuizcard.js" asp-append-version="true"></script>
     <environment include="Development">
         <script src="~/js/profile/index.js"></script>
     </environment>

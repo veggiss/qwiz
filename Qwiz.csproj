@@ -27,6 +27,14 @@
 
   <ItemGroup>
     <_ContentIncludedByDefault Remove="Views\Leaderboards\Index.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Shared\Profile\_HistoryCardPartial.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Shared\Profile\_MyQuizPartial.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Shared\Profile\_MyQuizSinglePartial.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Shared\Play\_QuestionIntroPartial.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Shared\Play\_QuestionPartial.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Shared\Play\_QuizSummaryPartial.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Shared\Quiz\_QuizCardPartial.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Shared\Quiz\_QuizCardSinglePartial.cshtml" />
   </ItemGroup>
 
 </Project>

@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SpaServices.Prerendering;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Qwiz.Data;
 using Qwiz.Models;
 
@@ -46,34 +47,32 @@ namespace Qwiz.Controllers
                 var query = await _um.Users
                     .Where(u => u.UserName == username)
                     .SelectMany(q => q.QuizzesTaken)
-                    .Include(q => q.Quiz)
-                    .ThenInclude(q => q.Questions)
-                    .Include(q => q.Quiz)
-                    .ThenInclude(q => q.Owner).ToListAsync();
+                    .Include(q => q.Quiz).ToListAsync();
                 
-                var entries    = query.Skip((page - 1) * size).Take(size).ToList();
-                var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
+                var entries      = query.Skip((page - 1) * size).Take(size).ToList();
+                var pages        = (int) Math.Ceiling(decimal.Divide(query.Count, size));
+                var authUsername = _um.GetUserName(User);
+                var showSummary  = authUsername != null && authUsername == username;
                 
-                return PartialView("Profile/_HistoryCardPartial", new HistoryCardModel(entries, totalPages));
+                return Ok(new {entries, pages, showSummary});
             }
             
             if (type == "quizzesBy" && username != null)
             {
-                var query = await _db.Quizzes
-                    .Include(q => q.Owner)
-                    .Where(q => q.Owner.UserName == username).ToListAsync();
+                var query = await _db.Quizzes.Where(q => q.OwnerUsername == username).ToListAsync();
                 
-                var partialString = (await _um.GetUserAsync(User)).UserName == username ? "Profile/_MyQuizPartial" : "Quiz/_QuizCardPartial";
-                var entries       = query.Skip((page - 1) * size).Take(size).ToList();
-                var totalPages    = (int) Math.Ceiling(decimal.Divide(query.Count, size));
+                var entries      = query.Skip((page - 1) * size).Take(size).ToList();
+                var pages        = (int) Math.Ceiling(decimal.Divide(query.Count, size));
+                var authUsername = _um.GetUserName(User);
+                var canEdit      = authUsername != null && authUsername == username;
                 
-                return PartialView(partialString, new QuizCardModel(entries, totalPages));
+                return Ok(new {entries, pages, canEdit});
             }
 
             if (type == "category")
             {
                 var category =  CategoryFromIndex(categoryIndex);
-                var query = await _db.Quizzes.Include(q => q.Owner).ToListAsync();
+                var query = await _db.Quizzes.ToListAsync();
 
                 if (category != null)        query = query.Where(q => q.Category == category).ToList();
                 else if (difficulty != null) query = query.Where(q => q.Difficulty == difficulty).ToList();
@@ -81,7 +80,7 @@ namespace Qwiz.Controllers
                 if (search != null)
                 {
                     var searchArr        = Regex.Split(search.ToLower(), @"\s+").Where(s => s != string.Empty);
-                    var queryUserName    = query.Where(q => searchArr.Any(q.Owner.UserName.ToLower().Contains)).ToList();
+                    var queryUserName    = query.Where(q => searchArr.Any(q.OwnerUsername.ToLower().Contains)).ToList();
                     var queryDescription = query.Where(q => searchArr.Any(q.Description.ToLower().Contains)).ToList();
                     var queryCategory    = query.Where(q => searchArr.Any(q.Category.ToLower().Contains)).ToList();
                     var queryTopic       = query.Where(q => searchArr.Any(q.Topic.ToLower().Contains)).ToList();
@@ -102,9 +101,9 @@ namespace Qwiz.Controllers
                 }
                 
                 var entries = query.Skip((page - 1) * size).Take(size).ToList();
-                var totalPages = (int) Math.Ceiling(decimal.Divide(query.Count, size));
+                var pages   = (int) Math.Ceiling(decimal.Divide(query.Count, size));
                 
-                return PartialView("Quiz/_QuizCardPartial", new QuizCardModel(entries, totalPages));
+                return Ok(new {entries, pages});
             }
 
             return BadRequest();
@@ -143,9 +142,9 @@ namespace Qwiz.Controllers
                     .ThenInclude(q => q.Quiz)
                     .SingleOrDefaultAsync(u => u.Id == userId);
                 
-                if (!user.QuestionsTaken.Exists(q => q.Question.Id == questionId)) 
+                if (user != null && !user.QuestionsTaken.Exists(q => q.Question.Id == questionId)) 
                 {
-                    var answeredCorrectly = string.Equals(guess, question.CorrectAnswer, StringComparison.CurrentCultureIgnoreCase);
+                    var answeredCorrectly = guess == question.CorrectAnswer;
                     var timer = DateTime.Now - user.LastQuestionStarted;
                     var timerSec = (int) Math.Round(timer.TotalSeconds);
                     
@@ -184,10 +183,13 @@ namespace Qwiz.Controllers
 
         [HttpPost("create")]
         [Authorize]
-        public async Task<IActionResult> CreateQuiz([FromBody] Quiz quiz)
+        public async Task<IActionResult> CreateQuiz([FromBody][Bind("Topic", "Category", "Description", "ImagePath", "Questions")] Quiz quiz)
         {
             if (quiz.Id != 0) return BadRequest();
             if (!ModelState.IsValid) return BadRequest();
+            if (!QuestionsValid(quiz.Questions)) return BadRequest();
+            
+            quiz.OwnerUsername = _um.GetUserName(User);
             
             _db.Add(quiz);
             await _db.SaveChangesAsync();
@@ -212,6 +214,7 @@ namespace Qwiz.Controllers
             
             if (quiz == null) return BadRequest();
             if (quiz.OwnerId != _um.GetUserId(User)) return BadRequest();
+            if (!QuestionsValid(quiz.Questions)) return BadRequest();
             
             try
             {
@@ -342,8 +345,11 @@ namespace Qwiz.Controllers
                 score += XpGainedFromQuestion(questionTaken.Question.Difficulty);
                 questionsTaken.Add(questionTaken);
             }
+
+            var quizTaken = new QuizTaken(quiz, correctAnswers, score, questionsTaken);
+            await _db.QuizzesTaken.AddAsync(quizTaken);
             
-            user.QuizzesTaken.Add(new QuizTaken(quiz, correctAnswers, score, questionsTaken));
+            user.QuizzesTaken.Add(quizTaken);
             user.QuizzesTakenCount++;
             await _um.UpdateAsync(user);
         }
@@ -354,39 +360,48 @@ namespace Qwiz.Controllers
             
             string[] category =
             {
-                "General Knowledge",                     //0
-                "Entertainment: Books",                  //1
-                "Entertainment: Film",                   //2
-                "Entertainment: Music",                  //3
-                "Entertainment: Musicals & Theatres",    //4
-                "Entertainment: Television",             //5
-                "Entertainment: Video Games",            //6
-                "Entertainment: Board Games",            //7
-                "Science & Nature",                      //8
-                "Science: Computers",                    //9
-                "Science: Mathematics",                  //10
-                "Mythology",                             //11
-                "Sports",                                //12
-                "Geography",                             //13
-                "History",                               //14
-                "Politics",                              //15
-                "Art",                                   //16
-                "Celebrities",                           //17
-                "Animals",                               //18
-                "Vehicles",                              //19
-                "Entertainment: Comics",                 //20
-                "Science: Gadgets",                      //21
-                "Entertainment: Japanese Anime & Manga", //22
-                "Entertainment: Cartoon & Animations"    //23
+                "General Knowledge",      //0
+                "Books",                  //1
+                "Film",                   //2
+                "Music",                  //3
+                "Musicals & Theatres",    //4
+                "Television",             //5
+                "Video Games",            //6
+                "Board Games",            //7
+                "Science & Nature",       //8
+                "Computers",              //9
+                "Mathematics",            //10
+                "Mythology",              //11
+                "Sports",                 //12
+                "Geography",              //13
+                "History",                //14
+                "Politics",               //15
+                "Art",                    //16
+                "Celebrities",            //17
+                "Animals",                //18
+                "Vehicles",               //19
+                "Comics",                 //20
+                "Gadgets",                //21
+                "Japanese Anime & Manga", //22
+                "Cartoon & Animations"    //23
             };
 
             return category[(int) id];
         }
-        
-        private static void Unbind(ModelStateDictionary modelState, params string[] modelProperties)
+
+        // Checks if the alternatives of type multiple choice actually have 4 items
+        public bool QuestionsValid(List<Question> questions)
         {
-            foreach (var prop in modelProperties)
-                modelState.Remove(prop);
+            foreach (var question in questions)
+            {
+                if (question.QuestionType == "multiple_choice")
+                {
+                    string[] arr = JsonConvert.DeserializeObject<string[]>(question.Alternatives);
+                    if (arr.Length != 4) return false;
+                }
+            }
+
+            return true;
         }
     }
 }

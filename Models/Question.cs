@@ -1,4 +1,6 @@
+using System;
 using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
 
 namespace Qwiz.Models
 {
@@ -6,15 +8,15 @@ namespace Qwiz.Models
     {
         public Question() {}
 
-        public Question(string type, string text, string alt, string answer, string correctAlternative, string difficulty, string imagePath)
+        public Question(string type, string text, string alt, string answer, string alternative, string difficulty, string imagePath)
         {
             QuestionType = type;
             QuestionText = text;
-            Alternatives = alt;
             CorrectAnswer = answer;
+            CorrectAlternative = alternative;
             Difficulty = difficulty;
             ImagePath = imagePath;
-            CorrectAlternative = correctAlternative;
+            Alternatives = alt;
         }
         
         public int Id { get; set; }

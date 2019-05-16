@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
+using System.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Newtonsoft.Json;
 using Qwiz.Controllers;
 using Qwiz.Models;
 
@@ -22,7 +25,7 @@ namespace Qwiz.Data
             await db.SaveChangesAsync();
             
             var question1 = new Question("multiple_choice", "What color is grass?", "[\"a\", \"b\", \"c\", \"d\"]", "a", "A", "hard", "");
-            var question2 = new Question("true_false", "Is grass green?", null, "True", "true", "easy", "");
+            var question2 = new Question("true_false", "Is grass green?", null, "True", "A", "easy", "");
             
             await db.Questions.AddRangeAsync(question1, question2);
             await db.SaveChangesAsync();
@@ -33,7 +36,7 @@ namespace Qwiz.Data
             await db.SaveChangesAsync();
 
             // Get questions from open trivia DB API
-            for (var i = 0; i < 5; i++)
+            for (var i = 0; i < 10; i++)
             {
                 dynamic randomQuestion = await GetObjectFromApi("https://opentdb.com/", "api.php?amount=10");
                 dynamic randomImage = await GetObjectFromApi("http://www.splashbase.co/", "api/v1/images/random");
@@ -45,15 +48,23 @@ namespace Qwiz.Data
                 foreach (var q in randomQuestion.results)
                 {
                     if (q == null) continue;
-                    
-                    string text = System.Web.HttpUtility.HtmlDecode((string) q.question);
+                    // TODO: Should strings be json stringified?
+                    string text = HttpUtility.HtmlDecode((string) q.question);
                     string qType = q.type;
                     string qDifficulty = q.difficulty;
-                    string answer = q.correct_answer;
+                    string answer = HttpUtility.HtmlDecode((string) q.correct_answer);
                     Question question;
                     
-                    if (qType == "multiple") {
-                        string alt = "[\"" + answer + "\",\"" + q.incorrect_answers[0] + "\",\"" + q.incorrect_answers[1] + "\",\"" + q.incorrect_answers[2] + "\"]";
+                    if (qType == "multiple")
+                    {
+                        string[] alternatives =
+                        {
+                            answer,
+                            HttpUtility.HtmlDecode((string) q.incorrect_answers[0]),
+                            HttpUtility.HtmlDecode((string) q.incorrect_answers[1]),
+                            HttpUtility.HtmlDecode((string) q.incorrect_answers[2])
+                        };
+                        var alt = JsonConvert.SerializeObject(alternatives);
                         question = new Question("multiple_choice", text, alt, answer, "A", qDifficulty, "");
                     } 
                     else
@@ -68,7 +79,7 @@ namespace Qwiz.Data
 
                 var ran = new Random();
                 string randomName = Path.GetRandomFileName().Replace(".", "");
-                string category = System.Web.HttpUtility.HtmlDecode(ApiQuizController.CategoryFromIndex(ran.Next(0, 23)));
+                string category = HttpUtility.HtmlDecode(ApiQuizController.CategoryFromIndex(ran.Next(0, 23)));
                 
                 var quiz = new Quiz(user, apiQuestions, category, randomName, "Description", "easy");
                 quiz.ImagePath = randomImage.url;

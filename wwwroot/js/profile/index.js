@@ -4,16 +4,23 @@ $(document).ready(() => {
     let app = new Vue({
         el: '#tabContent',
         data: {
-            historyPageCount: 1,
-            myQuizzesPageCount: 1,
-            badgesPageCount: 1
+            myQuizzes: {
+                entries: [],
+                pages: 0,
+                canEdit: false
+            },
+            historyList: {
+                entries: [],
+                pages: 0,
+                showSummary: false,
+            }
         },
         mounted: function() {
-            this.historyCallback(1);
+            this.historyListCallback(1);
             this.myQuizzesCallback(1);
         },
         methods: {
-            historyCallback: function(page) {
+            historyListCallback: function(page) {
                 let self = this;
                 
                 axios.get(util.apiUrl('/api/getQuizList', {
@@ -22,8 +29,9 @@ $(document).ready(() => {
                     type: 'history',
                     username: model.userName
                 })).then(function(response) {
-                    let pageCount = self.renderList('#historyList', response.data);
-                    if (pageCount > 1) self.historyPageCount = pageCount;
+                    self.historyList.entries = response.data.entries;
+                    self.historyList.pages = response.data.pages;
+                    self.historyList.showSummary = response.data.showSummary;
                 });
             },
             myQuizzesCallback: function(page) {
@@ -35,17 +43,13 @@ $(document).ready(() => {
                     type: 'quizzesBy',
                     username: model.userName
                 })).then(function(response) {
-                    let pageCount = self.renderList('#myQuizzesList', response.data);
-                    if (pageCount > 1) self.myQuizzesPageCount = pageCount;
+                    self.myQuizzes.entries = response.data.entries;
+                    self.myQuizzes.pages = response.data.pages;
+                    self.myQuizzes.canEdit = response.data.canEdit;
                 });
             },
             badgesCallback: function(page) {
 
-            },
-            renderList: function(id, data) {
-                $(id).empty();
-                let result = $(id).html(data);
-                return parseInt($(result.find(".totalPages")[0]).attr("amount"));
             }
         }
     });

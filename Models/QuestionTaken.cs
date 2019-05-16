@@ -23,5 +23,6 @@ namespace Qwiz.Models
         public int Bonus { get; set; }
         public TimeSpan Time { get; set; }
         public DateTime DateTaken { get; set; } = DateTime.Now;
+        public string DateTakenFormatted { get; set; } = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
     }
 }

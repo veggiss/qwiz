@@ -39,11 +39,16 @@ namespace Qwiz.Controllers
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (quiz == null) return NotFound();
             
-            quiz.Questions.ForEach(item => item.CorrectAnswer = "");
+            // Remove the correct answers, client should not have this information
+            quiz.Questions.ForEach(q =>
+            {
+                q.CorrectAnswer = "";
+            });
             
             return View(quiz);
         }
-
+        
+        [Authorize]
         public IActionResult Create()
         {
             return View();
@@ -58,10 +63,14 @@ namespace Qwiz.Controllers
                 .Include(q => q.Questions)
                 .FirstOrDefaultAsync(q => q.Id == id);
             if (quiz == null) return NotFound();
+
+            if (quiz.OwnerUsername == _um.GetUserName(User))
+                return View("../Quiz/Create", quiz);
             
-            return View("../Quiz/Create", quiz);
+            return NotFound();
         }
 
+        // TODO: Fix so only the user that took the quiz can see the summary
         [Authorize]
         public async Task<IActionResult> Summary(int? id)
         {

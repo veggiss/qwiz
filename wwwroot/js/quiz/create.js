@@ -112,12 +112,12 @@ $(document).ready(function() {
                 let type = getType([$(this).find(".questionType")[0].selectedIndex]);
                 let a = $(this).find(".alternative");
                 let alt = type === "multiple_choice" ? JSON.stringify([a[0].value, a[1].value, a[2].value, a[3].value]) : null;
-                let correctAlternative = $(this).find(".correctAlternative").children("option:selected")[0];
-                let correctAnswer = type === "true_false" ? correctAlternative.innerHTML : $(this).find(`[name=${correctAlternative.value}]`)[0].value;
-                
+                let correctAlternative = $(this).find(".correctAlternative").children("option:selected")[0].value;
+                let correctAnswer = type === "true_false" ? correctAlternative : $(this).find(`[name=${correctAlternative}]`)[0].value;
+
                 let question = {
-                    correctAlternative: correctAlternative.value,
                     correctAnswer: correctAnswer,
+                    correctAlternative: correctAlternative,
                     questionText: $(this).find(".questionText")[0].value,
                     questionType: type,
                     imagePath: $(this).find(".questionImgPrev").attr('src'),
@@ -144,7 +144,7 @@ $(document).ready(function() {
                 if (response.status === 200) {
                     window.location.href = '/Profile';
                 }
-            });
+            }).catch(e => console.log(e));
         } else {
             $(".alert").show().delay(2000).fadeOut();
         }
