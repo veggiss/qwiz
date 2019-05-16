@@ -17,44 +17,31 @@ $(document).ready(function() {
     });
 
     $(document).on("change", ".questionType", function(e) {
-        let ans = getRoot(this).find(".correctAnswer");
+        let ans = getRoot(this).find(".correctAlternative");
         let alt = getRoot(this).find(".alternatives");
+        let selectedIndex = e.currentTarget.selectedIndex;
+        if (selectedIndex === 0 ) {
+            alt.show();
+            ans.empty();
 
-        switch (e.currentTarget.selectedIndex) {
-            case 0:
-            {
-                alt.show();
-                ans.empty();
+            alt.find("input").each(function() {
+                $(this).attr("required", true);
+            });
 
-                alt.find("input").each(function() {
-                    $(this).attr("required", true);
-                });
+            ["A", "B", "C", "D"].forEach(e => {
+                ans.append($("<option></option>").text(e));
+            });
+        } else {
+            alt.hide();
+            ans.empty();
 
-                ["A", "B", "C", "D"].forEach(e => {
-                    ans.append($("<option></option>").text(e));
-                });
+            alt.find("input").each(function() {
+                $(this).attr("required", false);
+            });
 
-                break;
-            }
-            case 1:
-            {
-                alt.hide();
-                ans.empty();
-
-                alt.find("input").each(function() {
-                    $(this).attr("required", false);
-                });
-
-                [{ text: "True", value: true }, { text: "False", value: false }].forEach(e => {
-                    ans.append($("<option></option>").attr("value", e.value).text(e.text));
-                });
-
-                break;
-            }
-            default:
-            {
-                console.error("Not a valid question type!");
-            }
+            [{ text: "True", value: true }, { text: "False", value: false }].forEach(e => {
+                ans.append($("<option></option>").attr("value", e.value).text(e.text));
+            });
         }
     });
 
@@ -71,23 +58,14 @@ $(document).ready(function() {
         getRoot(this).find(".collapse").slideToggle("slow", "swing");
     });
 
-    // TODO: Here is es7's wait/async preferred, but that requires transpiling
     $(document).on("change",
-    "input.questionImg", function() {
-        // Es7 ->
-        // let path = await uploadImage(this.files[0]).catch(e => console.log(e));
-        // let questionImgPrev = getRoot(this).find(".questionImgPrev");
-        // questionImgPrev.attr('src', path);
-            
+    "input.questionImg", function() {            
         uploadImage(this.files[0]).then(path => {
             getRoot(this).find(".questionImgPrev").attr('src', path);
         }).catch(e => console.log(e));
     });
 
     $("#quizImg").change(function() {
-        // let path = await uploadImage(this.files[0]).catch(e => console.log(e));
-        // $("#quizImgPrev").attr('src', path);
-
         uploadImage(this.files[0]).then(path => {
             $("#quizImgPrev").attr('src', path);
         }).catch(e => console.log(e));
@@ -134,9 +112,12 @@ $(document).ready(function() {
                 let type = getType([$(this).find(".questionType")[0].selectedIndex]);
                 let a = $(this).find(".alternative");
                 let alt = type === "multiple_choice" ? JSON.stringify([a[0].value, a[1].value, a[2].value, a[3].value]) : null;
-
+                let correctAlternative = $(this).find(".correctAlternative").children("option:selected")[0];
+                let correctAnswer = type === "true_false" ? correctAlternative.innerHTML : $(this).find(`[name=${correctAlternative.value}]`)[0].value;
+                
                 let question = {
-                    correctAnswer: $(this).find(".correctAnswer").children("option:selected").val(),
+                    correctAlternative: correctAlternative.value,
+                    correctAnswer: correctAnswer,
                     questionText: $(this).find(".questionText")[0].value,
                     questionType: type,
                     imagePath: $(this).find(".questionImgPrev").attr('src'),
@@ -152,6 +133,8 @@ $(document).ready(function() {
                 quizForm.ownerId = model.ownerId;
                 api = '/api/update';
             }
+            
+            console.log(quizForm);
 
             axios.post(api, JSON.stringify(quizForm), {
                 headers: {
@@ -195,7 +178,7 @@ $(document).ready(function() {
 
                 $(dom).find(".questionType").val(question.questionType);
                 $(dom).find(".questionType").trigger("change");
-                $(dom).find(".correctAnswer").val(question.correctAnswer);
+                $(dom).find(".correctAlternative").val(question.correctAlternative);
             });
 
             $("#deleteDiv").show();
@@ -218,7 +201,7 @@ $(document).ready(function() {
                             <span aria-hidden="true" title="Remove Question" style="color:#dc3545;">&times;</span>
                         </button>
                         <label>Question Text</label>
-                        <textarea class="border rounded bg-white questionText" required style="margin-bottom: 15px; padding: 5px; font-size: 30px; width: 100%; text-align: center;"></textarea>
+                        <textarea class="border rounded bg-white questionText" maxlength="128" required style="margin-bottom: 15px; padding: 5px; font-size: 30px; width: 100%; text-align: center;"></textarea>
                         
                         <label>Question Image</label>
                         <input type="file" class="btn btn-primary questionImg" style="margin: 5px; width: 98%" value="Add image"/>
@@ -243,7 +226,7 @@ $(document).ready(function() {
                         
                         <div class="form-group">
                             <label>Correct Answer</label>
-                            <select class="form-control correctAnswer">
+                            <select class="form-control correctAlternative">
                                 <option value="A">A</option>
                                 <option value="B">B</option>
                                 <option value="C">C</option>
@@ -253,16 +236,16 @@ $(document).ready(function() {
                         
                         <div class="form-row alternatives">
                             <div class="form-group col-md-6">
-                                <input type="text" class="form-control text-center alternative" placeholder="Alternative A" required>
+                                <input type="text" name="A" class="form-control text-center alternative" placeholder="Alternative A" required>
                             </div>
                             <div class="form-group col-md-6">
-                                <input type="text" class="form-control text-center alternative" placeholder="Alternative B" required>
+                                <input type="text" name="B" class="form-control text-center alternative" placeholder="Alternative B" required>
                             </div>
                             <div class="form-group col-md-6">
-                                <input type="text" class="form-control text-center alternative" placeholder="Alternative C" required>
+                                <input type="text" name="C" class="form-control text-center alternative" placeholder="Alternative C" required>
                             </div>
                             <div class="form-group col-md-6">
-                                <input type="text" class="form-control text-center alternative" placeholder="Alternative D" required>
+                                <input type="text" name="D" class="form-control text-center alternative" placeholder="Alternative D" required>
                             </div>
                         </div>
                     </div>

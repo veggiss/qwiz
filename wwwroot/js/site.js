@@ -20,7 +20,9 @@ let util = {
 
 // Global vars goes here
 let global = {
-    quizCardAmount: 6
+    quizCardAmount: 6,
+    wakeUpTimer: 1000 * 60 * 5,
+    isAuthenticated: false
 };
 
 // Adds paginate component to vue
@@ -34,7 +36,7 @@ if (!Object.prototype.forEach) {
                 throw new TypeError('Not an object');
             }
             thisArg = thisArg || window;
-            for (var key in this) {
+            for (let key in this) {
                 if (this.hasOwnProperty(key)) {
                     callback.call(thisArg, this[key], key, this);
                 }
@@ -43,11 +45,11 @@ if (!Object.prototype.forEach) {
     });
 }
 
-// Start intervall for wakeup request telling the server that the user is online
+// Start intervall for wakeup request telling the server know the user is online
 setInterval(() => {
     let lastActivity = window.localStorage.getItem("lastActivity");
-    if (lastActivity == null || parseInt(lastActivity) < Date.now()) {
+    if (global.isAuthenticated && (lastActivity == null || parseInt(lastActivity) < Date.now())) {
+        window.localStorage.setItem("lastActivity", (Date.now() + global.wakeUpTimer).toString());
         axios.get('/api/wakeUp');
-        window.localStorage.setItem("lastActivity", (Date.now() + 1000 * 60).toString());
     }
-}, 1000 * 60);
+}, 1000 * 30);

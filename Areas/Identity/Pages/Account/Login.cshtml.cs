@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using Qwiz.Models;
 
+
 namespace Qwiz.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
@@ -72,7 +73,7 @@ namespace Qwiz.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            returnUrl = returnUrl ?? Url.Content("~/");
+            returnUrl = returnUrl ?? Url.Content("¨~/Profile");
 
             if (ModelState.IsValid)
             {
@@ -85,7 +86,7 @@ namespace Qwiz.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
-                    return LocalRedirect(returnUrl);
+                    return Redirect("/Profile");
                 }
                 if (result.RequiresTwoFactor)
                 {

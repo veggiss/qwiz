@@ -1,0 +1,49 @@
+@model QuizTaken
+@{
+    var questionNum = 1;
+}
+
+<div class="bg-dark text-center p-2">
+    <h1 class="lead display-4">Summary</h1>
+    <hr class="my-4">
+    <p class="lead">You got @Model.CorrectAnswers of @Model.Quiz.Questions.Count questions right!</p>
+    <p class="lead small text-muted">Quiz taken @Model.DateTaken</p>
+    
+    <table class="table table-bordered overflow-hidden text-wrap">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Question</th>
+            <th>Answer</th>
+            <th>Your Answer</th>
+            <th>Time</th>
+            <th>XP (Bonus)</th>
+        </tr>
+        </thead>
+        <tbody>
+            @foreach (var questionTaken in Model.QuestionsTaken)
+            {
+                <tr>
+                    <th class="small pb-0"scope="row">@questionNum</th>
+                    <td class="small text-left w-35 pb-0">@questionTaken.Question.QuestionText</td>
+                    <td class="small pb-0 w-10">@questionTaken.Question.CorrectAnswer</td>
+                    @if (@questionTaken.AnsweredCorrectly)
+                    {
+                        <td class="small bg-success pb-0 w-10">@questionTaken.Answer</td>
+                    }
+                    else
+                    {
+                        <td class="small bg-danger pb-0 w-10">@questionTaken.Answer</td>
+                    }
+                    
+                    <td class="pb-0 w-10">@Math.Round(questionTaken.Time.TotalSeconds) sec</td>
+                    <td class="pb-0 w-10">@questionTaken.XpGained (@questionTaken.Bonus)</td>
+                </tr>
+
+                {
+                    questionNum++;
+                }
+            }
+        </tbody>
+    </table>
+</div>
