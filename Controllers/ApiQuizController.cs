@@ -338,7 +338,7 @@ namespace Qwiz.Controllers
                 questionsTaken.Add(questionTaken);
             }
             
-            var quizTaken = new QuizTaken(quiz, correctAnswers, score, questionsTaken);
+            var quizTaken = new QuizTaken(quiz, correctAnswers, score, questionsTaken, user.UserName);
             await _db.QuizzesTaken.AddAsync(quizTaken);
             
             user.QuizzesTaken.Add(quizTaken);
