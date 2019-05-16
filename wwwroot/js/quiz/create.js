@@ -133,8 +133,6 @@ $(document).ready(function() {
                 quizForm.ownerId = model.ownerId;
                 api = '/api/update';
             }
-            
-            console.log(quizForm);
 
             axios.post(api, JSON.stringify(quizForm), {
                 headers: {

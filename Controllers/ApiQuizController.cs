@@ -215,7 +215,11 @@ namespace Qwiz.Controllers
             if (quiz == null) return BadRequest();
             if (quiz.OwnerId != _um.GetUserId(User)) return BadRequest();
             if (!QuestionsValid(quiz.Questions)) return BadRequest();
+
+            if (await _db.QuizzesTaken.AnyAsync(q => q.Quiz == quiz))
+                return BadRequest(new {error = "You cannot edit this quiz because someone has already taken it. You can however delete it, and create a new."});
             
+            // TODO: Questions from request gets added and replaced, even unedited once. Fix Plz
             try
             {
                 quiz.Topic        = quizForm.Topic;

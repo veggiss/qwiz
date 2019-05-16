@@ -44,7 +44,6 @@ $(document).ready(() => {
                         self.stopTimer();
                         $("#nextBtnCollapse").collapse('show');
                         $("#question").find(`button[name='${correctAlternative}']`).addClass('bg-success');
-                        console.log(correctAlternative);
                         
                         if (wasNotCorrect) {
                             $(e.target).addClass('alert-danger');

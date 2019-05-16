@@ -23,25 +23,27 @@
         <tbody>
             @foreach (var questionTaken in Model.QuestionsTaken)
             {
-                <tr>
-                    <th class="small pb-0"scope="row">@questionNum</th>
-                    <td class="small text-left w-35 pb-0">@questionTaken.Question.QuestionText</td>
-                    <td class="small pb-0 w-10">@questionTaken.Question.CorrectAnswer</td>
-                    @if (@questionTaken.AnsweredCorrectly)
-                    {
-                        <td class="small bg-success pb-0 w-10">@questionTaken.Answer</td>
-                    }
-                    else
-                    {
-                        <td class="small bg-danger pb-0 w-10">@questionTaken.Answer</td>
-                    }
-                    
-                    <td class="pb-0 w-10">@Math.Round(questionTaken.Time.TotalSeconds) sec</td>
-                    <td class="pb-0 w-10">@questionTaken.XpGained (@questionTaken.Bonus)</td>
-                </tr>
+                if (questionTaken.Question != null) {
+                    <tr>
+                        <th class="small pb-0"scope="row">@questionNum</th>
+                        <td class="small text-left w-35 pb-0">@questionTaken.Question.QuestionText</td>
+                        <td class="small pb-0 w-10">@questionTaken.Question.CorrectAnswer</td>
+                        @if (@questionTaken.AnsweredCorrectly)
+                        {
+                            <td class="small bg-success pb-0 w-10">@questionTaken.Answer</td>
+                        }
+                        else
+                        {
+                            <td class="small bg-danger pb-0 w-10">@questionTaken.Answer</td>
+                        }
+                        
+                        <td class="pb-0 w-10">@Math.Round(questionTaken.Time.TotalSeconds) sec</td>
+                        <td class="pb-0 w-10">@questionTaken.XpGained (@questionTaken.Bonus)</td>
+                    </tr>
 
-                {
-                    questionNum++;
+                    {
+                        questionNum++;
+                    }
                 }
             }
         </tbody>
