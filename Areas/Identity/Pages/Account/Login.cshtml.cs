@@ -73,12 +73,10 @@ namespace Qwiz.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            returnUrl = returnUrl ?? Url.Content("¨~/Profile");
+            returnUrl = returnUrl ?? Url.Content("~/Profile");
 
             if (ModelState.IsValid)
             {
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
                 var isEmail = IsValidEmailAddress(Input.LoginName);
                 var username = isEmail ? (await _um.FindByEmailAsync(Input.LoginName)).UserName : Input.LoginName;
                 

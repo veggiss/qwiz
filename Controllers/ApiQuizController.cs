@@ -36,7 +36,7 @@ namespace Qwiz.Controllers
             _db = db;
             _um = um;
         }
-
+        
         [HttpGet("getQuizList")]
         public async Task<IActionResult> GetQuizList(string username, int page, int size, string type, int? categoryIndex, string difficulty, string orderBy, string search)
         {

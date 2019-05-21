@@ -26,5 +26,6 @@ namespace Qwiz.Models
         public List<QuestionTaken> QuestionsTaken { get; set; } = new List<QuestionTaken>();
         public List<QuizTaken> QuizzesTaken { get; set; } = new List<QuizTaken>();
         public List<Quiz> MyQuizzes { get; set; } = new List<Quiz>();
+        public List<Group> MyGroups { get; set; } = new List<Group>();
     }
 }

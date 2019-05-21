@@ -32,7 +32,6 @@ namespace Qwiz.Controllers
             if (username == null) username = _um.GetUserName(User);
             if (username == null) return Redirect("../Identity/Account/Login");
             
-            
             var user = await _db.Users.FirstOrDefaultAsync(u => u.UserName == username);
             if (user == null) return NotFound();
             

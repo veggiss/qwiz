@@ -36,9 +36,6 @@
                     <partial name="_LoginPartial" />
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link" asp-controller="Quiz" asp-action="Index">Play</a>
                         </li>
                         <li class="nav-item">
@@ -46,6 +43,9 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Leaderboard" asp-action="Index">Leaderboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Group" asp-action="Index">Groups</a>
                         </li>
                      </ul>
                 </div>
@@ -106,6 +106,7 @@
         <script src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
     <script>global.isAuthenticated = @Json.Serialize(User.Identity.IsAuthenticated);</script>
+    <script>global.currentUserName = @Json.Serialize(User.Identity.Name);</script>
 
     @RenderSection("Scripts", required: false)
 </body>

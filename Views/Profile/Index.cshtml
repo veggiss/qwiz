@@ -15,7 +15,7 @@
     </div>
     <div class="col">
         <div class="d-flex flex-column">
-            <img class="avatar mx-auto d-block m-2" alt="" src="https://images.immediate.co.uk/volatile/sites/4/2018/08/iStock_000044061370_Medium-fa5f8aa.jpg?quality=45&crop=5px,17px,929px,400px&resize=960,413">
+            <img class="avatar mx-auto d-block m-2" alt="" src="~/images/avatar.png">
             <span class="badge badge-pill badge-light">@Model.UserName (@Model.FirstName @Model.LastName)</span>
             @{
                 if (online)
@@ -54,7 +54,7 @@
             <a class="nav-link" id="myQuizzes-tab" data-toggle="tab" href="#myQuizzes" role="tab" aria-controls="myQuizzes" aria-selected="false">Quizzes by @Model.UserName</a>
         </li>
         <li>
-            <a class="nav-link" id="badges-tab" data-toggle="tab" href="#badges" role="tab" aria-controls="badges" aria-selected="false">Badges</a>
+            <a class="nav-link" id="myGroups-tab" data-toggle="tab" href="#myGroups" role="tab" aria-controls="myGroups" aria-selected="false">Groups</a>
         </li>
     </ul>
 
@@ -70,7 +70,8 @@
                     v-bind:key="index">
                 </quizcard>
                 
-                <paginate class="w-100 d-flex justify-content-center"
+                <paginate v-if="historyList.pages > 1"
+                    class="w-100 d-flex justify-content-center"
                     :page-count="historyList.pages"
                     :page-range="5"
                     :margin-pages="0"
@@ -99,7 +100,8 @@
                     v-bind:can-edit="myQuizzes.canEdit">
                 </quizcard>
                 
-                <paginate class="w-100 d-flex justify-content-center"
+                <paginate v-if="myQuizzes.pages > 1"
+                    class="w-100 d-flex justify-content-center"
                     :page-count="myQuizzes.pages"
                     :page-range="5"
                     :margin-pages="0"
@@ -118,7 +120,33 @@
         </div>
     </div>
     
-    <div class="tab-pane fade" id="badges" role="tabpanel" aria-labelledby="badges-tab">
+    <div class="tab-pane fade" id="myGroups" role="tabpanel" aria-labelledby="myGroups-tab">
+        <div class="d-flex justify-content-center">
+            <div class="w-100">
+                <groupcard 
+                    v-for="(group, index) in myGroups.entries"
+                    v-bind:group="group"
+                    v-bind:key="index">
+                </groupcard>
+                
+                <paginate v-if="myGroups.pages > 1"
+                    class="w-100 d-flex justify-content-center"
+                    :page-count="myGroups.pages"
+                    :page-range="5"
+                    :margin-pages="0"
+                    :click-handler="myGroupsCallback"
+                    :prev-text="'Prev'"
+                    :next-text="'Next'"
+                    :container-class="'pagination'"
+                    :page-class="'page-item'"
+                    :page-link-class="'page-link'"
+                    :next-link-class="'page-link'"
+                    :prev-link-class="'page-link'"
+                    :no-li-surround="false"
+                    :first-last-button="true">
+                </paginate>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -132,6 +160,7 @@
         };
     </script>
     <script src="~/js/vueQuizcard.js" asp-append-version="true"></script>
+    <script src="~/js/group/vueGroupcard.js" asp-append-version="true"></script>
     <environment include="Development">
         <script src="~/js/profile/index.js"></script>
     </environment>

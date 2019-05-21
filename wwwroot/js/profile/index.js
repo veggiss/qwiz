@@ -13,11 +13,29 @@ $(document).ready(() => {
                 entries: [],
                 pages: 0,
                 showSummary: false,
-            }
+            },
+            myGroups: {
+                entries: [],
+                pages: 0
+            },
+            myQuizzesClicked: false,
+            myGroupsClicked: false
         },
         mounted: function() {
             this.historyListCallback(1);
-            this.myQuizzesCallback(1);
+            $("#myQuizzes-tab").click(() => {
+                if (!this.myQuizzesClicked) {
+                    this.myQuizzesCallback(1);
+                    this.myQuizzesClicked = true;
+                }
+            })
+
+            $("#myGroups-tab").click(() => {
+                if (!this.myGroupsClicked) {
+                    this.myGroupsCallback(1);
+                    this.myGroupsClicked = true;
+                }
+            })
         },
         methods: {
             historyListCallback: function(page) {
@@ -48,8 +66,21 @@ $(document).ready(() => {
                     self.myQuizzes.canEdit = response.data.canEdit;
                 });
             },
-            badgesCallback: function(page) {
+            myGroupsCallback: function(page) {
+                let self = this;
 
+                axios.get(util.apiUrl('/api/group/getList/myGroups', {
+                    page: page,
+                    size: global.membersCardAmount,
+                    username: model.userName
+                })).then(function(response) {
+                    console.log(response.data);
+                    self.myGroups.entries = response.data.entries;
+                    self.myGroups.pages = response.data.pages;
+                }).catch(function(e) {
+                    if (e.response.status === 400)
+                        util.openModal(e.response.data);
+                });
             }
         }
     });

@@ -70,7 +70,6 @@ namespace Qwiz.Controllers
             return NotFound();
         }
 
-        // TODO: Fix so only the user that took the quiz can see the summary
         [Authorize]
         public async Task<IActionResult> Summary(int? id)
         {

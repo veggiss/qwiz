@@ -64,7 +64,7 @@ body {
   vertical-align: middle;
   width: 150px;
   height: 150px;
-  border-radius: 50%;
+  border-radius: 5%;
   object-fit: cover;
 }
 
@@ -135,4 +135,8 @@ body {
   top: 50%;
   -ms-transform: translateY(-50%);
   transform: translateY(-50%);
+}
+
+.no-underline {
+  text-decoration: none !important
 }

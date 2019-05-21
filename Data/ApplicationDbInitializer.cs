@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Qwiz.Controllers;
 using Qwiz.Models;
@@ -19,74 +20,94 @@ namespace Qwiz.Data
         {
             db.Database.EnsureDeleted();
             db.Database.EnsureCreated();
+            var ran = new Random();
             
-            var user = new ApplicationUser {FirstName = "Admin", LastName = "Boss", UserName = "user123", Email = "user@uia.no"};
-            await um.CreateAsync(user, "Password1.");
-            await db.SaveChangesAsync();
-            
-            var question1 = new Question("multiple_choice", "What color is grass?", "[\"a\", \"b\", \"c\", \"d\"]", "a", "A", "hard", "");
-            var question2 = new Question("true_false", "Is grass green?", null, "True", "A", "easy", "");
-            
-            await db.Questions.AddRangeAsync(question1, question2);
-            await db.SaveChangesAsync();
-            
-            var questions = new List<Question>() {question1, question2};
-            
-            await db.Quizzes.AddAsync(new Quiz(user, questions, "Category", "Topic", "Description", "easy"));
+            var adminUser = new ApplicationUser {FirstName = "Admin", LastName = "Boss", UserName = "user123", Email = "user@uia.no"};
+            await um.CreateAsync(adminUser, "Password1.");
             await db.SaveChangesAsync();
 
-            // Get questions from open trivia DB API
-            for (var i = 0; i < 10; i++)
+            for (int i = 0; i < 100; i++)
             {
-                dynamic randomQuestion = await GetObjectFromApi("https://opentdb.com/", "api.php?amount=10");
-                dynamic randomImage = await GetObjectFromApi("http://www.splashbase.co/", "api/v1/images/random");
-                
-                if (randomQuestion == null || randomImage == null) continue;
-                
-                var apiQuestions = new List<Question>();
-                
-                foreach (var q in randomQuestion.results)
+                string randomUsername = Path.GetRandomFileName().Replace(".", "");
+                var user = new ApplicationUser
                 {
-                    if (q == null) continue;
-                    // TODO: Should strings be json stringified?
-                    string text = HttpUtility.HtmlDecode((string) q.question);
-                    string qType = q.type;
-                    string qDifficulty = q.difficulty;
-                    string answer = HttpUtility.HtmlDecode((string) q.correct_answer);
-                    Question question;
-                    
-                    if (qType == "multiple")
-                    {
-                        string[] alternatives =
-                        {
-                            answer,
-                            HttpUtility.HtmlDecode((string) q.incorrect_answers[0]),
-                            HttpUtility.HtmlDecode((string) q.incorrect_answers[1]),
-                            HttpUtility.HtmlDecode((string) q.incorrect_answers[2])
-                        };
-                        var alt = JsonConvert.SerializeObject(alternatives);
-                        question = new Question("multiple_choice", text, alt, answer, "A", qDifficulty, "");
-                    } 
-                    else
-                    {
-                        question = new Question("true_false", text, null, answer, answer.ToLower(), qDifficulty, "");
-                    }
-                    
-                    apiQuestions.Add(question);
-                    await db.Questions.AddRangeAsync(question);
-                    db.SaveChanges();
-                }
+                    FirstName = "Admin",
+                    LastName = "Boss",
+                    UserName = randomUsername + "1",
+                    Email = randomUsername + "@uia.no",
+                    Level = ran.Next(1, 20)
+                };
+                await um.CreateAsync(user, "Password1.");
+                await db.SaveChangesAsync();
+            }
 
-                var ran = new Random();
+            //// Get questions from open trivia DB API
+            //for (var i = 0; i < 1; i++)
+            //{
+            //    dynamic randomQuestion = await GetObjectFromApi("https://opentdb.com/", "api.php?amount=10");
+            //    dynamic randomImage = await GetObjectFromApi("http://www.splashbase.co/", "api/v1/images/random");
+            //    
+            //    if (randomQuestion == null || randomImage == null) continue;
+            //    
+            //    var apiQuestions = new List<Question>();
+            //    
+            //    foreach (var q in randomQuestion.results)
+            //    {
+            //        if (q == null) continue;
+            //        // TODO: Should strings be json stringified?
+            //        string text = HttpUtility.HtmlDecode((string) q.question);
+            //        string qType = q.type;
+            //        string qDifficulty = q.difficulty;
+            //        string answer = HttpUtility.HtmlDecode((string) q.correct_answer);
+            //        Question question;
+            //        
+            //        if (qType == "multiple")
+            //        {
+            //            string[] alternatives =
+            //            {
+            //                answer,
+            //                HttpUtility.HtmlDecode((string) q.incorrect_answers[0]),
+            //                HttpUtility.HtmlDecode((string) q.incorrect_answers[1]),
+            //                HttpUtility.HtmlDecode((string) q.incorrect_answers[2])
+            //            };
+            //            var alt = JsonConvert.SerializeObject(alternatives);
+            //            question = new Question("multiple_choice", text, alt, answer, "A", qDifficulty, "");
+            //        } 
+            //        else
+            //        {
+            //            question = new Question("true_false", text, null, answer, answer.ToLower(), qDifficulty, "");
+            //        }
+            //        
+            //        apiQuestions.Add(question);
+            //        await db.Questions.AddRangeAsync(question);
+            //        await db.SaveChangesAsync();
+            //    }
+
+            //    string randomName = Path.GetRandomFileName().Replace(".", "");
+            //    string category = HttpUtility.HtmlDecode(ApiQuizController.CategoryFromIndex(ran.Next(0, 23)));
+            //    var ranUser = await db.Users.Skip(ran.Next(0, db.Users.Count())).FirstAsync();
+            //    var quiz = new Quiz(ranUser, apiQuestions, category, randomName, "Description", "easy")
+            //    {
+            //        ImagePath = randomImage.url, Upvotes = ran.Next(0, 500), Views = ran.Next(0, 50000)
+            //    };
+            //    await db.Quizzes.AddRangeAsync(quiz);
+            //    await db.SaveChangesAsync();
+            //}
+
+            for (int i = 0; i < 10; i++)
+            {
                 string randomName = Path.GetRandomFileName().Replace(".", "");
-                string category = HttpUtility.HtmlDecode(ApiQuizController.CategoryFromIndex(ran.Next(0, 23)));
-                
-                var quiz = new Quiz(user, apiQuestions, category, randomName, "Description", "easy");
-                quiz.ImagePath = randomImage.url;
-                quiz.Upvotes = ran.Next(0, 500);
-                quiz.Views = ran.Next(0, 50000);
-                await db.Quizzes.AddRangeAsync(quiz);
-                db.SaveChanges();
+                var ranBool = ran.NextDouble() >= 0.5;
+                var group = new Group(randomName, adminUser, "Norway", ranBool);
+                var users = await db.Users.Take(ran.Next(0, db.Users.Count())).ToListAsync();
+                foreach (var user in users)
+                {
+                    var groupMember = new GroupMember(ran.Next(1, 3), user, group);
+                    group.Members.Add(groupMember);
+                    user.MyGroups.Add(group);
+                }
+                db.Groups.Add(group);
+                await db.SaveChangesAsync();
             }
         }
 

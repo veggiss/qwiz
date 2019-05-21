@@ -21,8 +21,10 @@ let util = {
 // Global vars goes here
 let global = {
     quizCardAmount: 12,
+    membersCardAmount: 20,
     wakeUpTimer: 1000 * 60 * 5,
-    isAuthenticated: false
+    isAuthenticated: false,
+    currentUserName: null
 };
 
 // Adds paginate component to vue
