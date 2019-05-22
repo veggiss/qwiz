@@ -5,7 +5,10 @@ Vue.component('question', {
 <div class="text-center">
     <div style="position: relative; height: 250px; max-height: 250px;">
         <div class="display-4 w-100 center-vertical">{{ text }}</div>
-        <img style="display:block; margin:auto; max-width: 600px; min-width: 100px;" :src="imagePath"/>
+    </div>
+    <div class="w-100" v-if="imagePath !== null">
+        <hr>
+        <img class="d-block m-auto" style="width: 500px;" :src="imagePath"/>
     </div>
     <hr>
     <label class="lead small text-muted m-0">Experience Points</label>
@@ -28,10 +31,10 @@ Vue.component('question', {
         </div>
         <div v-else-if="type === 'true_false'" class="form-row w-100">
             <div class="col">
-                <button v-on:click="$emit('answer', $event)" type="button" name="true" class="btn btn-dark m-1 w-100 border">True</button>
+                <button v-on:click="$emit('answer', $event)" type="button" name="T" class="btn btn-dark m-1 w-100 border">True</button>
             </div>
             <div class="col">
-                <button v-on:click="$emit('answer', $event)" type="button" name="false" class="btn btn-dark m-1 w-100 border">False</button>
+                <button v-on:click="$emit('answer', $event)" type="button" name="F" class="btn btn-dark m-1 w-100 border">False</button>
             </div>
         </div>   
     </div>
@@ -70,9 +73,9 @@ Vue.component('intro', {
     
     <label class="text-muted">Difficulty</label>
     <p class="lead">
-        <span v-if="difficulty = 'easy'" class="badge badge-pill badge-success">{{ difficulty }}</span>
-        <span v-else-if="difficulty = 'medium'" class="badge badge-pill badge-warning">{{ difficulty }}</span>
-        <span v-else-if="difficulty = 'hard'" class="badge badge-pill badge-danger">{{ difficulty }}</span>
+        <span v-if="difficulty == 'easy'" class="badge badge-pill badge-success">{{ difficulty }}</span>
+        <span v-else-if="difficulty == 'medium'" class="badge badge-pill badge-warning">{{ difficulty }}</span>
+        <span v-else-if="difficulty == 'hard'" class="badge badge-pill badge-danger">{{ difficulty }}</span>
     </p>
     
     <label class="text-muted">Questions</label>

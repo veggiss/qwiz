@@ -27,10 +27,13 @@ namespace Qwiz.Models
         [Required]
         public List<Question> Questions { get; set; }
         [Required]
+        [MaxLength(128)]
         public string Category { get; set; }
         [Required]
+        [MaxLength(128)]
         public string Topic { get; set; }
         [Required]
+        [MaxLength(128)]
         public string Description { get; set; }
         [MaxLength(128)]
         public string ImagePath { get; set; }

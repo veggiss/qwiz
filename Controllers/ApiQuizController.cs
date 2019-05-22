@@ -109,7 +109,7 @@ namespace Qwiz.Controllers
             return BadRequest();
         }
 
-        // TODO: Would it still be rest if we check if the user HAS started a question here? As is, the user can tamp stamp themselves
+        // TODO: Would it still be rest if we check if the user HAS started a question here? As is, the user can time stamp whenever
         [HttpGet("startTimer")]
         [Authorize]
         public async void StartTimer()
@@ -123,9 +123,9 @@ namespace Qwiz.Controllers
         }
 
         [HttpGet("answer")]
-        public async Task<IActionResult> CheckAnswer(int? quizId, int? questionId, string guess)
+        public async Task<IActionResult> CheckAnswer(int? quizId, int? questionId, string guess, string guessAlternative)
         {
-            if (quizId == null || questionId == null || guess == null) return BadRequest();
+            if (quizId == null || questionId == null || guess == null || guessAlternative == null) return BadRequest();
             
             var question = await _db.Questions.FindAsync(questionId);
             if (question == null) return BadRequest();
@@ -144,7 +144,7 @@ namespace Qwiz.Controllers
                 
                 if (user != null && !user.QuestionsTaken.Exists(q => q.Question.Id == questionId)) 
                 {
-                    var answeredCorrectly = guess == question.CorrectAnswer;
+                    var answeredCorrectly = guessAlternative == question.CorrectAlternative && guess == question.CorrectAnswer;
                     var timer = DateTime.Now - user.LastQuestionStarted;
                     var timerSec = (int) Math.Round(timer.TotalSeconds);
                     
@@ -155,7 +155,7 @@ namespace Qwiz.Controllers
                         AddExperience(user, xpGained + bonus);
                     }
                     
-                    AddQuestionTaken(user, question, answeredCorrectly, xpGained, bonus, timer, guess);
+                    AddQuestionTaken(user, question, answeredCorrectly, xpGained, bonus, timer, guess, guessAlternative);
                 }
                     
                 UpdateQuizTaken(user, quizId, question);
@@ -185,9 +185,13 @@ namespace Qwiz.Controllers
         [Authorize]
         public async Task<IActionResult> CreateQuiz([FromBody][Bind("Topic", "Category", "Description", "ImagePath", "Questions")] Quiz quiz)
         {
-            if (quiz.Id != 0) return BadRequest();
-            if (!ModelState.IsValid) return BadRequest();
-            if (!QuestionsValid(quiz.Questions)) return BadRequest();
+            if (quiz.Id != 0) return BadRequest("Invalid ID");
+
+            quiz.Category = CategoryFromIndex(int.TryParse(quiz.Category, out var i) ? i : (int?) null);
+            
+            if (quiz.Category == null) return BadRequest("Invalid category!");
+            if (!QuestionsValid(quiz.Questions)) return BadRequest("Invalid question format!");
+            if (!ModelState.IsValid) return BadRequest("Invalid quiz format!");
             
             quiz.OwnerUsername = _um.GetUserName(User);
             
@@ -297,9 +301,9 @@ namespace Qwiz.Controllers
             return value;
         }
 
-        private async void AddQuestionTaken(ApplicationUser user, Question question, bool answeredCorrectly, int xpGained, int bonus, TimeSpan timer, string answer)
+        private async void AddQuestionTaken(ApplicationUser user, Question question, bool answeredCorrectly, int xpGained, int bonus, TimeSpan timer, string answer, string alternative)
         {
-            var questionTaken = new QuestionTaken(question, answeredCorrectly, xpGained, bonus, timer, answer);
+            var questionTaken = new QuestionTaken(question, answeredCorrectly, xpGained, bonus, timer, answer, alternative);
             await _db.QuestionsTaken.AddAsync(questionTaken);
             user.QuestionsTaken.Add(questionTaken);
             await _um.UpdateAsync(user);
@@ -338,7 +342,7 @@ namespace Qwiz.Controllers
                 var questionTaken = user.QuestionsTaken.Find(b => b.Question == a);
                 if (questionTaken == null) return;
                 if (questionTaken.AnsweredCorrectly) correctAnswers++;
-                score += XpGainedFromQuestion(questionTaken.Question.Difficulty);
+                score += questionTaken.XpGained + questionTaken.Bonus;
                 questionsTaken.Add(questionTaken);
             }
             

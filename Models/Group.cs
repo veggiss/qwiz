@@ -25,8 +25,10 @@ namespace Qwiz.Models
         [Required]
         [MaxLength(64)]
         public string Region { get; set; }
-        public bool IsPublic { get; set; }
+        [Required]
         public string OwnerUsername { get; set; }
+        [Required]
+        public bool IsPublic { get; set; }
         [Required]
         public ApplicationUser Owner { get; set; }
         public DateTime CreationDate { get; set; } = DateTime.Now;

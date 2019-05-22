@@ -5,12 +5,12 @@ $(document).ready(() => {
             getBars: () => $("#progressBars").children(),
             isAuthenticated: global.isAuthenticated,
             lastQuestion: false,
-            correctAnswers: 0,
             answered: false,
             state: 'intro',
             question: null,
             quiz: model,
             xpGained: 0,
+            xpGainedUnmodified: 0,
             timer: 0,
             page: 0
         },
@@ -33,13 +33,14 @@ $(document).ready(() => {
                     axios.get(util.apiUrl('/api/answer', {
                         quizId: this.quiz.id,
                         questionId: this.question.id,
-                        guess: e.target.innerHTML
+                        guess: e.target.innerHTML,
+                        guessAlternative: e.target.name
                     })).then(function(response) {
                         let correctAlternative = response.data.correctAlternative;
                         let wasNotCorrect = e.target.name !== correctAlternative;
                         let bonus = response.data.bonus;
+                        let xp = response.data.xpGained
                         let bars = self.getBars();
-                        let xp = response.data.xpGained;
                         self.answered = true;
                         self.stopTimer();
                         $("#nextBtnCollapse").collapse('show');
@@ -50,8 +51,8 @@ $(document).ready(() => {
                             $(bars[self.page]).addClass('bg-danger');
                         } else {
                             $(bars[self.page]).addClass('bg-success');
+                            console.log(xp, bonus, response);
                             self.addXpPoints(xp + bonus);
-                            self.correctAnswers++;
                         }
                     });
                 }
@@ -98,7 +99,8 @@ $(document).ready(() => {
             },
             addXpPoints: function(xp) {
                 let self = this;
-                $({count: self.xpGained}).animate({count: (self.xpGained + xp)}, {
+                this.xpGainedUnmodified += xp;
+                $({count: self.xpGained}).animate({count: self.xpGainedUnmodified + 1}, {
                     duration:2000,
                     easing:'swing',
                     step: function() {

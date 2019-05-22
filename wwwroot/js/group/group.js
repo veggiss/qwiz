@@ -88,6 +88,8 @@ $(document).ready(() => {
                         if (e.response.status === 400)
                             util.openModal(e.response.data);
                     });
+                } else {
+                    window.location.href = "/Identity/Account/Login";
                 }
             },
             deleteGroup: function() {

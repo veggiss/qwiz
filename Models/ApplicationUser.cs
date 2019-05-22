@@ -18,7 +18,7 @@ namespace Qwiz.Models
         public int Xp { get; set; }
         public int Level { get; set; } = 1;
         public int QuizzesTakenCount { get; set; }
-        public int XpNeeded { get; set; } = 500;
+        public int XpNeeded { get; set; } = 1500;
         public DateTime RegistrationDate { get; set; } = DateTime.Now;
         public DateTime LastActivity { get; set; } = DateTime.Now;
         // TODO: Still complies with REST?

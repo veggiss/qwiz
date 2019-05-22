@@ -31,7 +31,7 @@ namespace Qwiz.Models
         [MaxLength(64)]
         public string CorrectAnswer { get; set; }
         [Required]
-        [RegularExpression("^(^[A-D]|true|false)$", ErrorMessage = "Answer type not accepted")]
+        [RegularExpression("^(^[A-D]|T|F)$", ErrorMessage = "Answer type not accepted")]
         public string CorrectAlternative { get; set; }
         [MaxLength(64)]
         public string ImagePath { get; set; }
