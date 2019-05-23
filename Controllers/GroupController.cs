@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,13 @@ namespace Qwiz.Controllers
         }
         
         public IActionResult Index()
+        {
+            return View();
+        }
+        
+        [HttpGet("create")]
+        [Authorize]
+        public IActionResult Create()
         {
             return View();
         }

@@ -1,0 +1,25 @@
+<div class="text-center">
+    <h1 class="display-4">Group Maker</h1>
+</div>
+
+<form id="groupForm" style="width: 555px; display: block; margin-right: auto; margin-left: auto;">
+    <hr>
+    <div>
+        <div class="form-check w-100">
+          <input class="form-check-input" type="checkbox" value="" id="isPublicBox">
+          <label for="isPublicBox">Public</label>
+        </div>
+        <div class="form-group w-100">
+            <label>Group Name</label>
+            <input id="groupName" maxlength="64" type="text" class="form-control" style="font-size: 30px;" required>
+        </div>
+        <div class="form-group w-100">
+            <label>Region</label>
+            <input id="groupRegion" maxlength="64" type="text" class="form-control" style="font-size: 30px;" required>
+        </div>
+    </div>
+    
+    <hr>
+    
+    <button id="btnCreateGroup" type="button" class="btn btn-success" style="margin: 5px; width: 98%">Create Group</button>
+</form>

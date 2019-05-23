@@ -62,7 +62,7 @@ namespace Qwiz.Controllers.Api
                         g.IsPublic,
                         g.OwnerUsername,
                         members = g.Members.Count,
-                        MulticastDelegate = g.CreationDate.ToString("dd/MM/yyyy HH:mm")
+                        creationDate = g.CreationDate.ToString("dd/MM/yyyy HH:mm")
                     }).ToList();
                     
                     var entries = query.Skip((page - 1) * size).Take(size).ToList();
@@ -161,6 +161,26 @@ namespace Qwiz.Controllers.Api
             
             switch (type)
             {
+                case "leave":
+                {
+                    var group = await _db.Groups
+                        .Where(g => g.Id == id)
+                        .Include(g => g.Members)
+                        .FirstOrDefaultAsync();
+                    if (group == null) return BadRequest("Group not found!");
+                
+                    var authorizedUsername = _um.GetUserName(User);
+                    if (group.OwnerUsername == authorizedUsername) return BadRequest("Can't leave group as the owner!");
+                    
+                    var member = group.Members.Find(p => p.Username == authorizedUsername);
+                    if (member == null) return BadRequest("You are not a member of this group!");
+                    
+                    group.Members.Remove(member);
+                    await _db.SaveChangesAsync();
+                    
+                    return Ok();
+
+                }
                 case "join":
                 {
                     var group = await _db.Groups
@@ -170,15 +190,13 @@ namespace Qwiz.Controllers.Api
                     if (group == null) return BadRequest("Group not found!");
                 
                     var user = await _um.GetUserAsync(User);
-                
-                    if (!group.PendingInvites.Exists(p => p.Username == user.UserName)) {
-                        group.PendingInvites.Add(new PendingMember(user));
-                        await _db.SaveChangesAsync();
+                    if (group.PendingInvites.Exists(p => p.Username == user.UserName))
+                        return BadRequest("Already pending request to join group!");
                     
-                        return Ok();
-                    }
-                
-                    return BadRequest("Already pending request to join group!");
+                    group.PendingInvites.Add(new PendingMember(user));
+                    await _db.SaveChangesAsync();
+                    
+                    return Ok();
                 }
 
                 case "accept":
@@ -232,7 +250,11 @@ namespace Qwiz.Controllers.Api
                         if (authorizedMember.Role == 0) group.Members.Remove(member);
                         else if (authorizedMember.Role == 1 && member.Role == 2) group.Members.Remove(member);
                         else return BadRequest("You are not authorized to do that!");
-                    } 
+                    }
+                    else if (type == "leave")
+                    {
+                        
+                    }
                     else if (type == "change")
                     {
                         if (role == null) return BadRequest("Role not present!");

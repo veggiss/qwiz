@@ -41,58 +41,58 @@ namespace Qwiz.Data
                 await db.SaveChangesAsync();
             }
 
-            //// Get questions from open trivia DB API
-            //for (var i = 0; i < 1; i++)
-            //{
-            //    dynamic randomQuestion = await GetObjectFromApi("https://opentdb.com/", "api.php?amount=10");
-            //    dynamic randomImage = await GetObjectFromApi("http://www.splashbase.co/", "api/v1/images/random");
-            //    
-            //    if (randomQuestion == null || randomImage == null) continue;
-            //    
-            //    var apiQuestions = new List<Question>();
-            //    
-            //    foreach (var q in randomQuestion.results)
-            //    {
-            //        if (q == null) continue;
-            //        // TODO: Should strings be json stringified?
-            //        string text = HttpUtility.HtmlDecode((string) q.question);
-            //        string qType = q.type;
-            //        string qDifficulty = q.difficulty;
-            //        string answer = HttpUtility.HtmlDecode((string) q.correct_answer);
-            //        Question question;
-            //        
-            //        if (qType == "multiple")
-            //        {
-            //            string[] alternatives =
-            //            {
-            //                answer,
-            //                HttpUtility.HtmlDecode((string) q.incorrect_answers[0]),
-            //                HttpUtility.HtmlDecode((string) q.incorrect_answers[1]),
-            //                HttpUtility.HtmlDecode((string) q.incorrect_answers[2])
-            //            };
-            //            var alt = JsonConvert.SerializeObject(alternatives);
-            //            question = new Question("multiple_choice", text, alt, answer, "A", qDifficulty, "");
-            //        } 
-            //        else
-            //        {
-            //            question = new Question("true_false", text, null, answer, answer.ToLower(), qDifficulty, "");
-            //        }
-            //        
-            //        apiQuestions.Add(question);
-            //        await db.Questions.AddRangeAsync(question);
-            //        await db.SaveChangesAsync();
-            //    }
+            // Get questions from open trivia DB API
+            for (var i = 0; i < 10; i++)
+            {
+                dynamic randomQuestion = await GetObjectFromApi("https://opentdb.com/", "api.php?amount=10");
+                //dynamic randomImage = await GetObjectFromApi("http://www.splashbase.co/", "api/v1/images/random");
+                
+                if (randomQuestion == null || randomQuestion.response_code != 0) continue;
+                
+                var apiQuestions = new List<Question>();
+                
+                foreach (var q in randomQuestion.results)
+                {
+                    if (q == null) continue;
+                    // TODO: Should strings be json stringified?
+                    string text = HttpUtility.HtmlDecode((string) q.question);
+                    string qType = q.type;
+                    string qDifficulty = q.difficulty;
+                    string answer = HttpUtility.HtmlDecode((string) q.correct_answer);
+                    Question question;
+                    
+                    if (qType == "multiple")
+                    {
+                        string[] alternatives =
+                        {
+                            answer,
+                            HttpUtility.HtmlDecode((string) q.incorrect_answers[0]),
+                            HttpUtility.HtmlDecode((string) q.incorrect_answers[1]),
+                            HttpUtility.HtmlDecode((string) q.incorrect_answers[2])
+                        };
+                        var alt = JsonConvert.SerializeObject(alternatives);
+                        question = new Question("multiple_choice", text, alt, answer, "A", qDifficulty, "");
+                    } 
+                    else
+                    {
+                        question = new Question("true_false", text, null, answer, answer == "true" ? "T" : "F", qDifficulty, null);
+                    }
+                    
+                    apiQuestions.Add(question);
+                    await db.Questions.AddRangeAsync(question);
+                    await db.SaveChangesAsync();
+                }
 
-            //    string randomName = Path.GetRandomFileName().Replace(".", "");
-            //    string category = HttpUtility.HtmlDecode(ApiQuizController.CategoryFromIndex(ran.Next(0, 23)));
-            //    var ranUser = await db.Users.Skip(ran.Next(0, db.Users.Count())).FirstAsync();
-            //    var quiz = new Quiz(ranUser, apiQuestions, category, randomName, "Description", "easy")
-            //    {
-            //        ImagePath = randomImage.url, Upvotes = ran.Next(0, 500), Views = ran.Next(0, 50000)
-            //    };
-            //    await db.Quizzes.AddRangeAsync(quiz);
-            //    await db.SaveChangesAsync();
-            //}
+                string randomName = Path.GetRandomFileName().Replace(".", "");
+                string category = HttpUtility.HtmlDecode(ApiQuizController.CategoryFromIndex(ran.Next(0, 23)));
+                var ranUser = await db.Users.Skip(ran.Next(0, db.Users.Count())).FirstAsync();
+                var quiz = new Quiz(ranUser, apiQuestions, category, randomName, "Description", "easy")
+                {
+                    ImagePath = "/images/logo_transparent_notxt.png", Upvotes = ran.Next(0, 500), Views = ran.Next(0, 50000)
+                };
+                await db.Quizzes.AddRangeAsync(quiz);
+                await db.SaveChangesAsync();
+            }
 
             for (int i = 0; i < 10; i++)
             {

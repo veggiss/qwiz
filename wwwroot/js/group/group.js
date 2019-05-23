@@ -76,6 +76,7 @@ $(document).ready(() => {
                         username: username,
                         role: event ? event.target.value : undefined
                     })).then(function(response) {
+                        console.log(response);
                         if (response.status === 200) {
                             if (type === "join") 
                                 $("#requestBtnGroup").html("<button class='m-3 btn btn-success' disabled>Request Pending</button>");
@@ -83,6 +84,8 @@ $(document).ready(() => {
                                 self.membersCallback(self.members.currentPage);
                             else if (type === "accept" || type === "deny")
                                 self.getPendingInvites(self.invites.currentPage);
+                            else if (type === "leave")
+                                location.reload();
                         }
                     }).catch(function(e) {
                         if (e.response.status === 400)
