@@ -26,9 +26,12 @@ $(document).ready(() => {
                     orderBy: $("#orderBySelect option:selected").attr("value"),
                     search: getSearchText($("#searchInput").val())
                 })).then(function(response) {
+                    if (global.debug) util.logResponse(response);
                     self.groups.entries = response.data.entries;
                     self.groups.pages = response.data.pages;
                     self.groups.currentPage = page;
+                }).catch(function(e) {
+                    util.logResponse(e);
                 });
             },
             searchCallback: function(e) {

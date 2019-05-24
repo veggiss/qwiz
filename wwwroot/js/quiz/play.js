@@ -21,7 +21,6 @@ $(document).ready(() => {
                     this.answered = false;
                     this.page++;
                     
-                    axios.get("/api/startTimer");
                     this.updateQuestion();
                     this.startTimer();
                 }
@@ -30,16 +29,17 @@ $(document).ready(() => {
                 if (!this.answered) {
                     let self = this;
                     
-                    axios.get(util.apiUrl('/api/answer', {
+                    axios.put(util.apiUrl('/api/question/answer', {
                         quizId: this.quiz.id,
                         questionId: this.question.id,
                         guess: e.target.innerHTML,
                         guessAlternative: e.target.name
                     })).then(function(response) {
+                        if (global.debug) util.logResponse(response);
                         let correctAlternative = response.data.correctAlternative;
                         let wasNotCorrect = e.target.name !== correctAlternative;
                         let bonus = response.data.bonus;
-                        let xp = response.data.xpGained
+                        let xp = response.data.xpGained;
                         let bars = self.getBars();
                         self.answered = true;
                         self.stopTimer();
@@ -51,10 +51,9 @@ $(document).ready(() => {
                             $(bars[self.page]).addClass('bg-danger');
                         } else {
                             $(bars[self.page]).addClass('bg-success');
-                            console.log(xp, bonus, response);
                             self.addXpPoints(xp + bonus);
                         }
-                    });
+                    }).catch(e => util.logResponse(e));
                 }
             },
             updateQuestion: function() {
@@ -67,7 +66,6 @@ $(document).ready(() => {
                 
                 if (state === "question") {
                     this.startTimer();
-                    axios.get("/api/startTimer");
                 } else if (state === "summary") {
                     window.location.href = '/Quiz/Summary/' + this.quiz.id;
                 }
@@ -75,6 +73,7 @@ $(document).ready(() => {
             startTimer: function() {
                 $('#progressTimer').css('width', '100%');
                 $("#nextBtnCollapse").collapse('hide');
+                if (global.isAuthenticated) axios.put("/api/question/startTimer");
                 this.stopTimer();
                 
                 this.timer = 15;

@@ -41,46 +41,43 @@ $(document).ready(() => {
             historyListCallback: function(page) {
                 let self = this;
                 
-                axios.get(util.apiUrl('/api/getQuizList', {
+                axios.get(util.apiUrl('/api/quiz/getList/history', {
                     page: page,
                     size: global.quizCardAmount,
-                    type: 'history',
                     username: model.userName
                 })).then(function(response) {
+                    if (global.debug) util.logResponse(response);
                     self.historyList.entries = response.data.entries;
                     self.historyList.pages = response.data.pages;
                     self.historyList.showSummary = response.data.showSummary;
-                });
+                }).catch(e => util.logResponse(e));;
             },
             myQuizzesCallback: function(page) {
                 let self = this;
                 
-                axios.get(util.apiUrl('/api/getQuizList', {
+                axios.get(util.apiUrl(`/api/quiz/getList/quizzesBy`, {
                     page: page,
                     size: global.quizCardAmount,
-                    type: 'quizzesBy',
                     username: model.userName
                 })).then(function(response) {
+                    if (global.debug) util.logResponse(response);
                     self.myQuizzes.entries = response.data.entries;
                     self.myQuizzes.pages = response.data.pages;
                     self.myQuizzes.canEdit = response.data.canEdit;
-                });
+                }).catch(e => util.logResponse(e));
             },
             myGroupsCallback: function(page) {
                 let self = this;
 
-                axios.get(util.apiUrl('/api/group/getList/myGroups', {
+                axios.get(util.apiUrl(`/api/group/getList/user`, {
                     page: page,
                     size: global.membersCardAmount,
                     username: model.userName
                 })).then(function(response) {
-                    console.log(response.data);
+                    if (global.debug) util.logResponse(response);
                     self.myGroups.entries = response.data.entries;
                     self.myGroups.pages = response.data.pages;
-                }).catch(function(e) {
-                    if (e.response.status === 400)
-                        util.openModal(e.response.data);
-                });
+                }).catch(e => util.logResponse(e));
             }
         }
     });

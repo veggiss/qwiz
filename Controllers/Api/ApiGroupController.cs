@@ -27,15 +27,31 @@ namespace Qwiz.Controllers.Api
         }
 
         [HttpGet("getList/{type}")]
-        public async Task<IActionResult> GetGroupsList(string type, int? id, int page, int size, string orderBy, string username, string search)
+        public async Task<IActionResult> GetGroupsList(string type, string username, int? id, int page, int size, string orderBy, string search)
         {
             if (page < 1 || size < 1 || type == null) return BadRequest("Invalid request!");
             
             switch (type)
             {
                 case "all":
+                case "user" when username != null:
                 {
-                    var groups = await _db.Groups.Include(g => g.Members).ToListAsync();
+                    List<Group> groups;
+
+                    if (username != null)
+                    {
+                        var user = await _um.Users
+                            .Where(u => u.UserName == username)
+                            .Include(u => u.MyGroups)
+                            .ThenInclude(g => g.Members).FirstOrDefaultAsync();
+                        if (user == null) return BadRequest("User doesn't exist!");
+
+                        groups = user.MyGroups;
+                    }
+                    else
+                    {
+                        groups = await _db.Groups.Include(g => g.Members).ToListAsync();
+                    }
 
                     if (orderBy == "members") groups = groups.OrderByDescending(g => g.Members.Count).ToList();
                     if (orderBy == "created") groups = groups.OrderByDescending(g => g.CreationDate).ToList();
@@ -65,31 +81,6 @@ namespace Qwiz.Controllers.Api
                         creationDate = g.CreationDate.ToString("dd/MM/yyyy HH:mm")
                     }).ToList();
                     
-                    var entries = query.Skip((page - 1) * size).Take(size).ToList();
-                    var pages   = (int) Math.Ceiling(decimal.Divide(query.Count, size));
-    
-                    return Ok(new {entries, pages});
-                }
-                case "myGroups":
-                {
-                    var user = await _um.Users
-                        .Where(u => u.UserName == username)
-                        .Include(u => u.MyGroups)
-                        .ThenInclude(g => g.Members).FirstOrDefaultAsync();
-                    if (user == null) return BadRequest("You need to be logged in!");
-                    
-                    var query = user.MyGroups
-                        .Select(g => new
-                        {
-                            g.Id,
-                            g.Name,
-                            g.Region,
-                            g.IsPublic,
-                            g.OwnerUsername,
-                            members = g.Members.Count,
-                            creationDate = g.CreationDate.ToString("dd/MM/yyyy HH:mm")
-                        }).ToList();
-
                     var entries = query.Skip((page - 1) * size).Take(size).ToList();
                     var pages   = (int) Math.Ceiling(decimal.Divide(query.Count, size));
     
@@ -153,11 +144,11 @@ namespace Qwiz.Controllers.Api
             }
         }
 
-        [HttpPut("request")]
+        [HttpPut("request/{type}")]
         [Authorize]
         public async Task<IActionResult> RequestGroup(string type, int? id, string username, int? role)
         {
-            if (id == null) return BadRequest("Invalid group ID!");
+            if (id == null || id < 1) return BadRequest("Invalid group ID!");
             
             switch (type)
             {
@@ -251,10 +242,6 @@ namespace Qwiz.Controllers.Api
                         else if (authorizedMember.Role == 1 && member.Role == 2) group.Members.Remove(member);
                         else return BadRequest("You are not authorized to do that!");
                     }
-                    else if (type == "leave")
-                    {
-                        
-                    }
                     else if (type == "change")
                     {
                         if (role == null) return BadRequest("Role not present!");
@@ -287,9 +274,9 @@ namespace Qwiz.Controllers.Api
             }
         }
 
-        [HttpDelete("remove")]
+        [HttpDelete("delete")]
         [Authorize]
-        public async Task<IActionResult> RemoveGroup(int? id)
+        public async Task<IActionResult> DeleteGroup(int? id)
         {
             if (id == null) return BadRequest("Id not present!");
             

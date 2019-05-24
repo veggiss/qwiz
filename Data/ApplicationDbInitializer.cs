@@ -84,7 +84,7 @@ namespace Qwiz.Data
                 }
 
                 string randomName = Path.GetRandomFileName().Replace(".", "");
-                string category = HttpUtility.HtmlDecode(ApiQuizController.CategoryFromIndex(ran.Next(0, 23)));
+                string category = HttpUtility.HtmlDecode(QuizUtil.CategoryFromIndex(ran.Next(0, 23)));
                 var ranUser = await db.Users.Skip(ran.Next(0, db.Users.Count())).FirstAsync();
                 var quiz = new Quiz(ranUser, apiQuestions, category, randomName, "Description", "easy")
                 {

@@ -46,6 +46,7 @@ $(document).ready(() => {
                     size: global.membersCardAmount,
                     orderBy: $("#orderBySelect option:selected").attr("value")
                 })).then(function(response) {
+                    if (global.debug) util.logResponse(response);
                     self.members.entries = response.data.entries;
                     self.members.pages = response.data.pages;
                     self.members.currentPage = page;
@@ -59,24 +60,23 @@ $(document).ready(() => {
                     page: page,
                     size: global.membersCardAmount
                 })).then(function(response) {
+                    if (global.debug) util.logResponse(response);
                     self.invites.entries = response.data.entries;
                     self.invites.pages = response.data.pages;
                 }).catch(function(e) {
-                    if (e.response.status === 400)
-                        util.openModal(e.response.data);
+                    util.logResponse(e);
                 });
             },
             requestGroup: function(type, username, event) {
                 if (global.isAuthenticated) {
                     let self = this;
                     
-                    axios.put(util.apiUrl('/api/group/request', {
+                    axios.put(util.apiUrl(`/api/group/request/${type}`, {
                         id: self.id,
-                        type: type,
                         username: username,
                         role: event ? event.target.value : undefined
                     })).then(function(response) {
-                        console.log(response);
+                        if (global.debug) util.logResponse(response);
                         if (response.status === 200) {
                             if (type === "join") 
                                 $("#requestBtnGroup").html("<button class='m-3 btn btn-success' disabled>Request Pending</button>");
@@ -88,8 +88,7 @@ $(document).ready(() => {
                                 location.reload();
                         }
                     }).catch(function(e) {
-                        if (e.response.status === 400)
-                            util.openModal(e.response.data);
+                        global.logResponse(e);
                     });
                 } else {
                     window.location.href = "/Identity/Account/Login";
@@ -102,10 +101,10 @@ $(document).ready(() => {
                     axios.delete(util.apiUrl('/api/group/remove', {
                         id: self.id
                     })).then(function(response) {
-                        console.log(response);
+                        if (global.debug) util.logResponse(response);
+                        if (response.status === 200) window.location.href = "/Group";
                     }).catch(function(e) {
-                        if (e.response.status === 400)
-                            util.openModal(e.response.data);
+                        util.logResponse(e);
                     });
                 }
             }

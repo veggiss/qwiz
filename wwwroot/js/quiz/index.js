@@ -19,17 +19,19 @@ $(document).ready(function () {
             categoriesCallback: function(page) {
                 let self = this;
 
-                axios.get(util.apiUrl('/api/getQuizList', {
+                axios.get(util.apiUrl(`/api/quiz/getList/search`, {
                     page: page,
                     size: global.quizCardAmount,
-                    type: 'category',
                     difficulty: $("#difficultySelect option:selected").attr("value"),
                     categoryIndex: $("#categorySelect option:selected").attr("value"),
                     orderBy: $("#orderBySelect option:selected").attr("value"),
                     search: getSearchText($("#searchInput").val())
                 })).then(function(response) {
+                    if (global.debug) util.logResponse(response);
                     self.searchEntries.entries = response.data.entries;
                     self.searchEntries.pages = response.data.pages;
+                }).catch(function(e) {
+                    util.logResponse(e);
                 });
             },
             searchCallback: function(e) {
