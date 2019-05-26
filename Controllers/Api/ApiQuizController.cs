@@ -98,6 +98,7 @@ namespace Qwiz.Controllers.Api
         }
         
         [HttpPost("create")]
+        [ValidateAntiForgeryToken]
         [Authorize]
         public async Task<IActionResult> CreateQuiz([FromBody][Bind("Topic", "Category", "Description", "ImagePath", "Questions")] Quiz quiz)
         {
@@ -123,6 +124,7 @@ namespace Qwiz.Controllers.Api
         }
 
         [HttpPost("update")]
+        [ValidateAntiForgeryToken]
         [Authorize]
         public async Task<IActionResult> UpdateQuiz([FromBody][Bind("Topic", "Category", "Description", "ImagePath", "Questions")] Quiz quizForm)
         {
@@ -157,6 +159,7 @@ namespace Qwiz.Controllers.Api
         }
         
         [HttpDelete("delete")]
+        [ValidateAntiForgeryToken]
         [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {

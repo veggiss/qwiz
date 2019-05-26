@@ -29,6 +29,8 @@ $(document).ready(() => {
                 if (!this.answered) {
                     let self = this;
                     
+                    console.log(global.header);
+                    
                     axios.put(util.apiUrl('/api/question/answer', {
                         quizId: this.quiz.id,
                         questionId: this.question.id,

@@ -28,9 +28,10 @@ namespace Qwiz.Controllers
         
         [HttpGet("create")]
         [Authorize]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            var user = await _um.GetUserAsync(User);
+            return View("Create", user.Email.Split("@")[1]);
         }
         
         [HttpGet("{id}")]

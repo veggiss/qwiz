@@ -18,9 +18,12 @@ let util = {
         $("#modalGlobal").modal()
     },
     logResponse: function(response) {
+        console.log(response);
         if (response.status) {
             let s = response.status.toString()[0];
             let data = response.data ? response.data : 'no data';
+            
+            
             
             if (s === '5') {
                 util.openModal("Server got an exception error, That ain't good..");
@@ -35,6 +38,21 @@ let util = {
                 console.log(data);
             }
         }
+    },
+    wakeUp: function() {
+        if (global.isAuthenticated) {
+            axios.put('/api/user/wakeUp');
+            setInterval(() => {
+                let lastActivity = window.localStorage.getItem("lastActivity");
+                if (global.isAuthenticated && (lastActivity == null || parseInt(lastActivity) < Date.now())) {
+                    window.localStorage.setItem("lastActivity", (Date.now() + global.wakeUpTimer).toString());
+                    axios.put('/api/user/wakeUp');
+                }
+            }, 1000 * 60);
+        }
+    },
+    getToken: function() {
+        return $('input[name="__RequestVerificationToken"]').val()
     }
 };
 
@@ -45,7 +63,13 @@ let global = {
     wakeUpTimer: 1000 * 60 * 5,
     isAuthenticated: false,
     currentUserName: null,
-    debug: true
+    debug: true,
+    header: {
+        headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': util.getToken()
+        }
+    }
 };
 
 // Adds paginate component to vue
@@ -68,11 +92,4 @@ if (!Object.prototype.forEach) {
     });
 }
 
-// Start intervall for wakeup request telling the server know the user is online
-setInterval(() => {
-    let lastActivity = window.localStorage.getItem("lastActivity");
-    if (global.isAuthenticated && (lastActivity == null || parseInt(lastActivity) < Date.now())) {
-        window.localStorage.setItem("lastActivity", (Date.now() + global.wakeUpTimer).toString());
-        axios.put('/api/user/wakeUp');
-    }
-}, 1000 * 30);
+util.wakeUp();

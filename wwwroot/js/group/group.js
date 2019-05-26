@@ -100,7 +100,7 @@ $(document).ready(() => {
 
                     axios.delete(util.apiUrl('/api/group/remove', {
                         id: self.id
-                    })).then(function(response) {
+                    }, global.header)).then(function(response) {
                         if (global.debug) util.logResponse(response);
                         if (response.status === 200) window.location.href = "/Group";
                     }).catch(function(e) {

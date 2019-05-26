@@ -45,11 +45,7 @@ $(document).ready(function() {
                         api = '/api/quiz/update';
                     }
                     
-                    axios.post(api, JSON.stringify(quiz), {
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    }).then(function(response) {
+                    axios.post(api, JSON.stringify(quiz), global.header).then(function(response) {
                         if (global.debug) util.logResponse(response);
                         if (response.status === 200) window.location.href = '/Profile';
                     }).catch(function(e) {
