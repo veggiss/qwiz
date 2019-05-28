@@ -14,10 +14,12 @@ namespace Qwiz.Models
             Time = time;
             Answer = answer;
             AnswerAlternative = alternative;
+            QuestionId = question.Id;
         }
         
         public int Id { get; set; }
         public Question Question { get; set; }
+        public int QuestionId { get; set; }
         public bool AnsweredCorrectly { get; set; }
         public string Answer { get; set; }
         public char AnswerAlternative { get; set; }

@@ -11,6 +11,7 @@ namespace Qwiz.Data
         {
         }
         
+        public DbSet<Upvote> Upvotes { get; set; }
         public DbSet<Image> Images { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<GroupMember> GroupMembers { get; set; }

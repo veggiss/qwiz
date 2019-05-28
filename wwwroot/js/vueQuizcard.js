@@ -1,5 +1,21 @@
 Vue.component('quizcard', {
-    props: ['id', 'quiz', 'canEdit', 'showSummary', 'quizTaken'],
+    props: ['index', 'quiz', 'canEdit', 'showSummary', 'quizTaken'],
+    data: function() {
+        return {
+            upvotes: this.quiz.upvotes,
+        } 
+    },
+    methods: {
+        addUpvote: function() {
+            if (global.isAuthenticated) {
+                let self = this;
+                axios.put('/api/quiz/upvote/' + self.quiz.id).then(function (response) {
+                    if (global.debug) util.logResponse(response);
+                    self.upvotes = response.data;
+                }).catch(e => util.logResponse(e.response));
+            }
+        }  
+    },
     template:
 `
 <div class="card float-left m-2 w-100" style="max-width: 22rem;">
@@ -17,8 +33,8 @@ Vue.component('quizcard', {
                 </div>
             
                 <div class="float-left ml-1 pt-1">
-                    <i class="align-text-bottom material-icons">thumb_up</i>
-                    <span>{{ quiz.upvotes }}</span>
+                    <button class="bg-transparent border-0 text-light"><i v-on:click="addUpvote" class="align-text-bottom material-icons">thumb_up</i></button>
+                    <span>{{ upvotes }}</span>
                 </div>
                 
                 <div class="float-right mr-1 pt-1">

@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Newtonsoft.Json;
 using Qwiz.Data;
 using Qwiz.Models;
@@ -53,21 +55,20 @@ namespace Qwiz.Controllers.Api
             if (userId != null) {
                 var user = await _db.Users
                     .Include(u => u.QuestionsTaken)
-                    .ThenInclude(q => q.Question)
                     .Include(u => u.QuizzesTaken)
-                    .ThenInclude(q => q.Quiz)
+                    .Include(u => u.MyQuizzes)
                     .SingleOrDefaultAsync(u => u.Id == userId);
                 
                 // Check if user has answered this question before
-                if (!user.QuestionsTaken.Exists(q => q.Question.Id == questionId)) 
-                {
+                if (!user.QuestionsTaken.Exists(q => q.QuestionId == questionId)){
                     // Check answer by alternative
                     var answeredCorrectly = guessAlternative == question.CorrectAlternative;
                     var timer = DateTime.Now - user.LastQuestionStarted;
                     var timerSec = (int) Math.Round(timer.TotalSeconds);
+                    var isOwner = user.MyQuizzes.Any(q => q.Id == quizId);
                     
                     // If answered within time frame
-                    if (answeredCorrectly && timerSec >= 0 && timerSec <= 15)
+                    if (answeredCorrectly && timerSec >= 0 && timerSec <= 15 && !isOwner)
                     {
                         xpGained = QuizUtil.XpGainedFromQuestion(question.Difficulty);
                         bonus = (int) (xpGained * (((15f - timerSec) / 15f * 100f) / 100f));
@@ -92,28 +93,29 @@ namespace Qwiz.Controllers.Api
             
             if (quiz == null) return;
             if (!quiz.Questions.Exists(q => q.Id == questionId)) return;
-            if (user.QuizzesTaken.Exists(q => q.Quiz == quiz)) return;
+            if (user.QuizzesTaken.Exists(q => q.QuizId == quizId)) return;
             
-            // TODO: Might get these from DB
             List<QuestionTaken> questionsTaken = new List<QuestionTaken>();
             var correctAnswers = 0;
             var score = 0;
             
             foreach(var a in quiz.Questions)
             {
-                var questionTaken = user.QuestionsTaken.Find(b => b.Question == a);
+                var questionTaken = user.QuestionsTaken.Find(b => b.QuestionId == a.Id);
                 if (questionTaken == null) return;
                 if (questionTaken.AnsweredCorrectly) correctAnswers++;
                 score += questionTaken.XpGained + questionTaken.Bonus;
                 questionsTaken.Add(questionTaken);
             }
-            
+
+            quiz.Views++;
             var quizTaken = new QuizTaken(quiz, correctAnswers, score, questionsTaken, user.UserName);
             await _db.QuizzesTaken.AddAsync(quizTaken);
             
             user.QuizzesTaken.Add(quizTaken);
             user.QuizzesTakenCount++;
             await _um.UpdateAsync(user);
+            await _db.SaveChangesAsync();
         }
         
         private async void AddExperience(ApplicationUser user, int amount)

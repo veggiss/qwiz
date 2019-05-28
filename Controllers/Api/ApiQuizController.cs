@@ -128,6 +128,33 @@ namespace Qwiz.Controllers.Api
             return Ok();
         }
 
+        [HttpPut("upvote/{id}")]
+        [Authorize]
+        public async Task<IActionResult> Upvote(int? id)
+        {
+            if (id == null) return BadRequest("Invalid request!");
+
+            var quiz = await _db.Quizzes.FindAsync(id);
+            if (quiz == null) return BadRequest("Could not find group!");
+
+            var user = await _um.GetUserAsync(User);
+            var upvote = await _db.Upvotes.Where(u => u.QuizId == quiz.Id && u.Username == user.UserName).FirstOrDefaultAsync();
+            
+            if (upvote == null)
+            {
+                quiz.Upvotes++;
+                _db.Upvotes.Add(new Upvote(user.UserName, quiz.Id));
+            }
+            else
+            {
+                quiz.Upvotes--;
+                _db.Upvotes.Remove(upvote);
+            }
+
+            await _db.SaveChangesAsync();
+            return Ok(quiz.Upvotes);
+        }
+
         [HttpPost("update")]
         [ValidateAntiForgeryToken]
         [Authorize]
