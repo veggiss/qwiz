@@ -1,0 +1,1 @@
+## Qwiz is a web application written with asp net core.
