@@ -27,7 +27,12 @@ namespace Qwiz.Controllers
         public async Task<IActionResult> Index()
         {
             if (QuizUtil.OfTheDayTimer < DateTime.Now)
-                QuizUtil.OfTheDayList = await UpdateOfTheDay();
+            {
+                if (await _db.Quizzes.CountAsync() >= 6)
+                {
+                    QuizUtil.OfTheDayList = await UpdateOfTheDay();
+                }
+            }
             
             return View(QuizUtil.OfTheDayList);
         }
@@ -103,7 +108,7 @@ namespace Qwiz.Controllers
         {
             var newQuizList = new List<Quiz>();
             var quizList = QuizUtil.OfTheDayList.ToList();
-            QuizUtil.OfTheDayTimer = DateTime.Now.AddSeconds(10);
+            QuizUtil.OfTheDayTimer = DateTime.Now.AddHours(12);
 
             for (var i = 0; i < 3; i++)
             {
