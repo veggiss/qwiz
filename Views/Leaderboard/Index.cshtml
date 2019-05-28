@@ -1,25 +1,148 @@
-@model List<ApplicationUser>
+<h1 style="text-align: center; padding-bottom: 50px; padding-top: 40px">Leaderboards</h1> 
 
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" id="today-tab" data-toggle="tab" href="#today" role="tab" aria-controls="today" aria-selected="true">Today</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="week-tab" data-toggle="tab" href="#week" role="tab" aria-controls="week" aria-selected="false">Week</a>
+    </li>
+    <li>
+        <a class="nav-link" id="month-tab" data-toggle="tab" href="#month" role="tab" aria-controls="month" aria-selected="false">Month</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="allTime-tab" data-toggle="tab" href="#allTime" role="tab" aria-controls="allTime" aria-selected="false">All Time</a>
+    </li>
+</ul>
 
-<h1 style="text-align: center; padding-bottom: 50px; padding-top: 40px">Top 100 players</h1> 
-<div class="table embed-responsive" style="width: 50%; margin-left: auto; margin-right: auto">
-           
-   <table id="leaderboard" class="table table-active">
-      <thead>
-      <tr class="bg-primary">
-         <th>Rank</th>
-         <th>User</th>
-         <th>Xp</th>
-      </tr>
-      </thead>
-      <tbody>
-      @foreach (var user in Model)
-      {
-         <tr id="leaderboardRow">
-            <th class="leaderboardColumn" style="vertical-align: middle; padding-left: 20px"></th>
-            <td class="leaderboardColumn"><img style="margin-right: 20px; vertical-align: middle" class="leaderboardavatar" src="https://images.immediate.co.uk/volatile/sites/4/2018/08/iStock_000044061370_Medium-fa5f8aa.jpg?quality=45&crop=5px,17px,929px,400px&resize=960,413"/>@user.UserName</td>
-            <td class="leaderboardColumn" style="vertical-align: middle">@user.Xp xp</td>
-         </tr>}
-      </tbody>
-   </table>
+<div class="tab-content justify-content-center" id="tabContent">
+    <div class="tab-pane fade show active" id="today" role="tabpanel" aria-labelledby="today-tab">
+        <div class="w-100 d-flex justify-content-center">
+            <div class="w-100">
+                <leaderboard-card
+                    v-bind:users="today.entries"
+                    v-bind:page="today.currentPage"
+                    v-bind:score="true">
+                </leaderboard-card>
+                <paginate v-model="today.currentPage"
+                    v-if="today.pages > 1"
+                    class="w-100 d-flex justify-content-center"
+                    :page-count="today.pages"
+                    :page-range="5"
+                    :margin-pages="0"
+                    :click-handler="getToday"
+                    :prev-text="'Prev'"
+                    :next-text="'Next'"
+                    :container-class="'pagination'"
+                    :page-class="'page-item'"
+                    :page-link-class="'page-link'"
+                    :next-link-class="'page-link'"
+                    :prev-link-class="'page-link'"
+                    :no-li-surround="false"
+                    :first-last-button="true">
+                </paginate>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tab-pane fade" id="week" role="tabpanel" aria-labelledby="week-tab">
+        <div class="d-flex justify-content-center">
+            <div class="w-100">
+                <leaderboard-card
+                    v-bind:users="week.entries"
+                    v-bind:page="week.currentPage"
+                    v-bind:score="true">
+                </leaderboard-card>
+                <paginate v-model="week.currentPage"
+                    v-if="week.pages > 1"
+                    class="w-100 d-flex justify-content-center"
+                    :page-count="week.pages"
+                    :page-range="5"
+                    :margin-pages="0"
+                    :click-handler="getWeek"
+                    :prev-text="'Prev'"
+                    :next-text="'Next'"
+                    :container-class="'pagination'"
+                    :page-class="'page-item'"
+                    :page-link-class="'page-link'"
+                    :next-link-class="'page-link'"
+                    :prev-link-class="'page-link'"
+                    :no-li-surround="false"
+                    :first-last-button="true">
+                </paginate>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tab-pane fade" id="month" role="tabpanel" aria-labelledby="month-tab">
+        <div class="d-flex justify-content-center">
+            <div class="w-100">
+                <leaderboard-card
+                    v-bind:users="month.entries"
+                    v-bind:page="month.currentPage"
+                    v-bind:score="true">
+                </leaderboard-card>
+                <paginate v-model="month.currentPage"
+                    v-if="month.pages > 1"
+                    class="w-100 d-flex justify-content-center"
+                    :page-count="month.pages"
+                    :page-range="5"
+                    :margin-pages="0"
+                    :click-handler="getMonth"
+                    :prev-text="'Prev'"
+                    :next-text="'Next'"
+                    :container-class="'pagination'"
+                    :page-class="'page-item'"
+                    :page-link-class="'page-link'"
+                    :next-link-class="'page-link'"
+                    :prev-link-class="'page-link'"
+                    :no-li-surround="false"
+                    :first-last-button="true">
+                </paginate>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tab-pane fade" id="allTime" role="tabpanel" aria-labelledby="allTime-tab">
+        <div class="d-flex justify-content-center">
+            <div class="w-100">
+                <leaderboard-card
+                    v-bind:users="all.entries"
+                    v-bind:page="all.currentPage"
+                    v-bind:score="true">
+                </leaderboard-card>
+                <paginate v-model="all.currentPage"
+                    v-if="all.pages > 1"
+                    class="w-100 d-flex justify-content-center"
+                    :page-count="all.pages"
+                    :page-range="5"
+                    :margin-pages="0"
+                    :click-handler="getAllTime"
+                    :prev-text="'Prev'"
+                    :next-text="'Next'"
+                    :container-class="'pagination'"
+                    :page-class="'page-item'"
+                    :page-link-class="'page-link'"
+                    :next-link-class="'page-link'"
+                    :prev-link-class="'page-link'"
+                    :no-li-surround="false"
+                    :first-last-button="true">
+                </paginate>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts
+{
+    <script>
+        let quizBoard = false;
+    </script>
+    <script src="~/js/leaderboard/vueLeaderboardCard.js" asp-append-version="true"></script>
+    <environment include="Development">
+       <script src="~/js/leaderboard/index.js"></script>
+    </environment>
+    <environment exclude="Development">
+       <script src="~/js/leaderboard/index.min.js" asp-append-version="true"></script>
+    </environment>
+}

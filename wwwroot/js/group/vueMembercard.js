@@ -19,7 +19,7 @@ Vue.component('membercard', {
         </div>
         <div class="float-left text-center m-1" style="width: 147px">
             <p class="m-0 w-100 small text-muted">{{ member.joinDate }}</p>
-            <a class="m-0 w-100 small badge badge-primary" :href="'/Profile?username' + member.username">{{ member.username }}</a>
+            <a class="m-0 w-100 small badge badge-primary" :href="'/user/' + member.username">{{ member.username }}</a>
             <p class="m-0 w-100 small badge badge-info">Level {{ member.level }}</p>
             
             <div v-if="role == 0 && member.role > 0">

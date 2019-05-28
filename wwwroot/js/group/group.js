@@ -63,9 +63,7 @@ $(document).ready(() => {
                     if (global.debug) util.logResponse(response);
                     self.invites.entries = response.data.entries;
                     self.invites.pages = response.data.pages;
-                }).catch(function(e) {
-                    util.logResponse(e);
-                });
+                }).catch(e => util.logResponse(e.response));
             },
             requestGroup: function(type, username, event) {
                 if (global.isAuthenticated) {
@@ -87,9 +85,7 @@ $(document).ready(() => {
                             else if (type === "leave")
                                 location.reload();
                         }
-                    }).catch(function(e) {
-                        global.logResponse(e);
-                    });
+                    }).catch(e => util.logResponse(e.response));
                 } else {
                     window.location.href = "/Identity/Account/Login";
                 }
@@ -98,14 +94,10 @@ $(document).ready(() => {
                 if (global.isAuthenticated && this.role === 0) {
                     let self = this;
 
-                    axios.delete(util.apiUrl('/api/group/remove', {
-                        id: self.id
-                    }, global.header)).then(function(response) {
+                    axios.delete('/api/group/delete/' + this.id, global.header).then(function(response) {
                         if (global.debug) util.logResponse(response);
-                        if (response.status === 200) window.location.href = "/Group";
-                    }).catch(function(e) {
-                        util.logResponse(e);
-                    });
+                        if (response.status === 200) window.location.href = "/group";
+                    }).catch(e => util.logResponse(e.response));
                 }
             }
         }

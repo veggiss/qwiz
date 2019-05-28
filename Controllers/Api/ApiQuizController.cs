@@ -30,71 +30,76 @@ namespace Qwiz.Controllers.Api
         {
             if (page < 1 || (size > 20 || size < 0)) return BadRequest();
 
-            if (type == "history" && username != null)
+            switch (type)
             {
-                var query = await _um.Users
-                    .Where(u => u.UserName == username)
-                    .SelectMany(q => q.QuizzesTaken)
-                    .Include(q => q.Quiz).ToListAsync();
-                
-                var entries      = query.Skip((page - 1) * size).Take(size).ToList();
-                var pages        = (int) Math.Ceiling(decimal.Divide(query.Count, size));
-                var authUsername = _um.GetUserName(User);
-                var showSummary  = authUsername != null && authUsername == username;
-                
-                return Ok(new {entries, pages, showSummary});
-            }
-            
-            if (type == "quizzesBy" && username != null)
-            {
-                var query = await _db.Quizzes.Where(q => q.OwnerUsername == username).ToListAsync();
-                
-                var entries      = query.Skip((page - 1) * size).Take(size).ToList();
-                var pages        = (int) Math.Ceiling(decimal.Divide(query.Count, size));
-                var authUsername = _um.GetUserName(User);
-                var canEdit      = authUsername != null && authUsername == username;
-                
-                return Ok(new {entries, pages, canEdit});
-            }
-
-            if (type == "search")
-            {
-                var category =  QuizUtil.CategoryFromIndex(categoryIndex);
-                var query = await _db.Quizzes.ToListAsync();
-
-                if (category != null)        query = query.Where(q => q.Category == category).ToList();
-                else if (difficulty != null) query = query.Where(q => q.Difficulty == difficulty).ToList();
-                
-                if (search != null)
+                case "history" when username != null:
                 {
-                    var searchArr        = Regex.Split(search.ToLower(), @"\s+").Where(s => s != string.Empty);
-                    var queryUserName    = query.Where(q => searchArr.Any(q.OwnerUsername.ToLower().Contains)).ToList();
-                    var queryDescription = query.Where(q => searchArr.Any(q.Description.ToLower().Contains)).ToList();
-                    var queryCategory    = query.Where(q => searchArr.Any(q.Category.ToLower().Contains)).ToList();
-                    var queryTopic       = query.Where(q => searchArr.Any(q.Topic.ToLower().Contains)).ToList();
-
-                    List<Quiz> searchList = new List<Quiz>();
-                    searchList.AddRange(queryTopic);
-                    searchList.AddRange(queryUserName);
-                    searchList.AddRange(queryDescription);
-                    searchList.AddRange(queryCategory);
-                    query = searchList.Distinct().ToList();
-                }
+                    var query = await _um.Users
+                        .Where(u => u.UserName == username)
+                        .SelectMany(q => q.QuizzesTaken)
+                        .Include(q => q.Quiz).ToListAsync();
                 
-                if (orderBy != null)
+                    var entries      = query.Skip((page - 1) * size).Take(size).ToList();
+                    var pages        = (int) Math.Ceiling(decimal.Divide(query.Count, size));
+                    var authUsername = _um.GetUserName(User);
+                    var showSummary  = authUsername != null && authUsername == username;
+                
+                    return Ok(new {entries, pages, showSummary});
+                }
+
+                case "quizzesBy" when username != null:
                 {
-                    if (orderBy == "views")        query = query.OrderByDescending(q => q.Views).ToList();
-                    else if (orderBy == "upvotes") query = query.OrderByDescending(q => q.Upvotes).ToList();
-                    else if (orderBy == "recent")  query = query.OrderByDescending(q => q.CreationDate).ToList();
+                    var query = await _db.Quizzes.Where(q => q.OwnerUsername == username).ToListAsync();
+                
+                    var entries      = query.Skip((page - 1) * size).Take(size).ToList();
+                    var pages        = (int) Math.Ceiling(decimal.Divide(query.Count, size));
+                    var authUsername = _um.GetUserName(User);
+                    var canEdit      = authUsername != null && authUsername == username;
+                
+                    return Ok(new {entries, pages, canEdit});
                 }
-                
-                var entries = query.Skip((page - 1) * size).Take(size).ToList();
-                var pages   = (int) Math.Ceiling(decimal.Divide(query.Count, size));
-                
-                return Ok(new {entries, pages});
-            }
 
-            return BadRequest();
+                case "search":
+                {
+                    var category =  QuizUtil.CategoryFromIndex(categoryIndex);
+                    var query = await _db.Quizzes.ToListAsync();
+
+                    // If category and difficulty is defined, filter the query
+                    if (category != null)        query = query.Where(q => q.Category == category).ToList();
+                    else if (difficulty != null) query = query.Where(q => q.Difficulty == difficulty).ToList();
+                
+                    if (search != null)
+                    {
+                        var searchArr        = Regex.Split(search.ToLower(), @"\s+").Where(s => s != string.Empty);
+                        var queryUserName    = query.Where(q => searchArr.Any(q.OwnerUsername.ToLower().Contains)).ToList();
+                        var queryDescription = query.Where(q => searchArr.Any(q.Description.ToLower().Contains)).ToList();
+                        var queryCategory    = query.Where(q => searchArr.Any(q.Category.ToLower().Contains)).ToList();
+                        var queryTopic       = query.Where(q => searchArr.Any(q.Topic.ToLower().Contains)).ToList();
+
+                        List<Quiz> searchList = new List<Quiz>();
+                        searchList.AddRange(queryTopic);
+                        searchList.AddRange(queryUserName);
+                        searchList.AddRange(queryDescription);
+                        searchList.AddRange(queryCategory);
+                        query = searchList.Distinct().ToList();
+                    }
+                
+                    if (orderBy != null)
+                    {
+                        if (orderBy == "views")        query = query.OrderByDescending(q => q.Views).ToList();
+                        else if (orderBy == "upvotes") query = query.OrderByDescending(q => q.Upvotes).ToList();
+                        else if (orderBy == "recent")  query = query.OrderByDescending(q => q.CreationDate).ToList();
+                    }
+                
+                    var entries = query.Skip((page - 1) * size).Take(size).ToList();
+                    var pages   = (int) Math.Ceiling(decimal.Divide(query.Count, size));
+                
+                    return Ok(new {entries, pages});
+                }
+
+                default:
+                    return BadRequest("Type not found!");
+            }
         }
         
         [HttpPost("create")]
@@ -131,8 +136,9 @@ namespace Qwiz.Controllers.Api
             if (!ModelState.IsValid) return BadRequest("Model state not valid!");
             
             var quiz = await _db.Quizzes
+                .Where(q => q.Id == quizForm.Id)
                 .Include(q => q.Questions)
-                .FirstOrDefaultAsync(q => q.Id == quizForm.Id);
+                .FirstOrDefaultAsync();
             
             if (quiz == null) return BadRequest("Quiz not found!");
             if (quiz.OwnerId != _um.GetUserId(User)) return BadRequest("You are not the owner of this quiz!");
@@ -148,7 +154,9 @@ namespace Qwiz.Controllers.Api
                 quiz.Category     = quizForm.Category;
                 quiz.Description  = quizForm.Description;
                 quiz.ImagePath    = quizForm.ImagePath;
-                quiz.Questions    = quizForm.Questions;
+                
+                _db.Questions.RemoveRange(quiz.Questions);
+                quiz.Questions = quizForm.Questions;
                 
                 await _db.SaveChangesAsync();
             } catch (DbUpdateConcurrencyException) {
@@ -158,21 +166,21 @@ namespace Qwiz.Controllers.Api
             return Ok();
         }
         
-        [HttpDelete("delete")]
+        [HttpDelete("delete/{id}")]
         [ValidateAntiForgeryToken]
         [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             var user = await _um.GetUserAsync(User);
-            if (id == null && user == null) return BadRequest();
+            if (id == null && user == null) return BadRequest("Invalid request!");
             
             var quiz = await _db.Quizzes
                 .Include(q => q.Questions)
                 .Include(q => q.Owner)
-                .Where(q => q.Owner == user)
                 .FirstOrDefaultAsync(q => q.Id == id);
-
-            if (quiz == null) return BadRequest();
+        
+            if (quiz == null) return BadRequest("That quiz does not exist!");
+            if (quiz.Owner != user) return BadRequest("You are not the owner!");
 
             var quizTaken = await _db.QuizzesTaken
                 .Include(q => q.QuestionsTaken)

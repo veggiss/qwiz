@@ -12,6 +12,19 @@
       </div>
       <br>
     </div>
+    <div class="container" style="text-align: center" style="background-color:pink;">
+      <div class="row">
+        <div class="col-sm-6" style="color: #FBC214">
+          @Model.UserCount
+          <h6>Registered users</h6>
+        </div>
+
+        <div class="col-sm-6" style="color: #FBC214">
+          @Model.QuizCount
+          <h6>Registered quizzes</h6>
+        </div>
+      </div>
+    </div>
     <p class="lead" style="text-align: center">Take and make quizzes for education or just for fun! Make a profile and start your qwiz-journey <strong>today!</strong></p>
   </div>
   
@@ -58,23 +71,6 @@
       <span class="carousel-control-next-icon" aria-hidden="true"></span>
       <span class="sr-only">Next</span>
     </a>
-  </div>
-</div>
-
-
-<div class="container" style="text-align: center" style="background-color:pink;">
-  <div class="row">
-    <div class="col-sm-6" style="color: #FBC214">
-      @Model.UserCount
-      <h6>Registered users</h6>
-    </div>
-
-    <div class="col-sm-6" style="color: #FBC214">
-      @Model.QuizCount
-      <h6>Registered quizzes</h6>
-    </div>
-
-    
   </div>
 </div>
 

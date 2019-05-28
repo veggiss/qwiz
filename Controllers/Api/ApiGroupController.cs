@@ -181,6 +181,15 @@ namespace Qwiz.Controllers.Api
                     if (group == null) return BadRequest("Group not found!");
                 
                     var user = await _um.GetUserAsync(User);
+                    
+                    Console.WriteLine("-----------------------------");
+                    Console.WriteLine(group.RequiresDomain);
+                    Console.WriteLine(group.RequiredDomain);
+                    Console.WriteLine(user.Email.Split("@")[1]);
+
+                    if (group.RequiresDomain && user.Email.Split("@")[1] != group.RequiredDomain)
+                        return BadRequest("Sorry, only users with email domain " + group.RequiredDomain + " can join this group!");
+
                     if (group.PendingInvites.Exists(p => p.Username == user.UserName))
                         return BadRequest("Already pending request to join group!");
 
@@ -287,20 +296,16 @@ namespace Qwiz.Controllers.Api
         {
             if (group.Id != 0) return BadRequest("Invalid ID");
             if (!ModelState.IsValid) return BadRequest("Invalid model state!");
-
+            
             var user = await _um.GetUserAsync(User);
             group = new Group(group.Name, user, group.Region, group.IsPublic, group.RequiresDomain);
-            
-            if (group.RequiresDomain) 
-                group.RequiredDomain = user.Email.Split("@")[1];
-            
             _db.Add(group);
             await _db.SaveChangesAsync();
             
             return Ok(group.Id);
         }
 
-        [HttpDelete("delete")]
+        [HttpDelete("delete/{id}")]
         [ValidateAntiForgeryToken]
         [Authorize]
         public async Task<IActionResult> DeleteGroup(int? id)

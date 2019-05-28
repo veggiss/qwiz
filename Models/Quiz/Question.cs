@@ -8,7 +8,7 @@ namespace Qwiz.Models
     {
         public Question() {}
 
-        public Question(string type, string text, string alt, string answer, string alternative, string difficulty, string imagePath)
+        public Question(string type, string text, string alt, string answer, char alternative, string difficulty, string imagePath)
         {
             QuestionType = type;
             QuestionText = text;
@@ -32,7 +32,7 @@ namespace Qwiz.Models
         public string CorrectAnswer { get; set; }
         [Required]
         [RegularExpression("^(^[A-D]|T|F)$", ErrorMessage = "Answer type not accepted")]
-        public string CorrectAlternative { get; set; }
+        public char CorrectAlternative { get; set; }
         [MaxLength(64)]
         public string ImagePath { get; set; }
         [Required]

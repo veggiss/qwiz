@@ -5,7 +5,7 @@ namespace Qwiz.Models
     public class QuestionTaken
     {
         public QuestionTaken() {}
-        public QuestionTaken(Question question, bool answeredCorrectly, int xpGained, int bonus, TimeSpan time, string answer, string alternative)
+        public QuestionTaken(Question question, bool answeredCorrectly, int xpGained, int bonus, TimeSpan time, string answer, char alternative)
         {
             Question = question;
             AnsweredCorrectly = answeredCorrectly;
@@ -20,7 +20,7 @@ namespace Qwiz.Models
         public Question Question { get; set; }
         public bool AnsweredCorrectly { get; set; }
         public string Answer { get; set; }
-        public string AnswerAlternative { get; set; }
+        public char AnswerAlternative { get; set; }
         public int XpGained { get; set; }
         public int Bonus { get; set; }
         public TimeSpan Time { get; set; }

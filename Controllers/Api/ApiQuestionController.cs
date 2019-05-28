@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Qwiz.Data;
 using Qwiz.Models;
 
@@ -37,9 +38,9 @@ namespace Qwiz.Controllers.Api
         }
 
         [HttpPut("answer")]
-        public async Task<IActionResult> CheckAnswer(int? quizId, int? questionId, string guess, string guessAlternative)
+        public async Task<IActionResult> CheckAnswer(int? quizId, int? questionId, char guessAlternative)
         {
-            if (quizId == null || questionId == null || guess == null || guessAlternative == null) return BadRequest();
+            if (quizId == null || questionId == null || guessAlternative == 0) return BadRequest();
             
             var question = await _db.Questions.FindAsync(questionId);
             if (question == null) return BadRequest();
@@ -48,6 +49,7 @@ namespace Qwiz.Controllers.Api
             var xpGained = 0;
             var bonus = 0;
             
+            // If user is authorized
             if (userId != null) {
                 var user = await _db.Users
                     .Include(u => u.QuestionsTaken)
@@ -56,12 +58,15 @@ namespace Qwiz.Controllers.Api
                     .ThenInclude(q => q.Quiz)
                     .SingleOrDefaultAsync(u => u.Id == userId);
                 
+                // Check if user has answered this question before
                 if (!user.QuestionsTaken.Exists(q => q.Question.Id == questionId)) 
                 {
-                    var answeredCorrectly = guessAlternative == question.CorrectAlternative && string.Equals(guess, question.CorrectAnswer, StringComparison.CurrentCultureIgnoreCase);
+                    // Check answer by alternative
+                    var answeredCorrectly = guessAlternative == question.CorrectAlternative;
                     var timer = DateTime.Now - user.LastQuestionStarted;
                     var timerSec = (int) Math.Round(timer.TotalSeconds);
                     
+                    // If answered within time frame
                     if (answeredCorrectly && timerSec >= 0 && timerSec <= 15)
                     {
                         xpGained = QuizUtil.XpGainedFromQuestion(question.Difficulty);
@@ -69,9 +74,10 @@ namespace Qwiz.Controllers.Api
                         AddExperience(user, xpGained + bonus);
                     }
                     
-                    AddQuestionTaken(user, question, answeredCorrectly, xpGained, bonus, timer, guess, guessAlternative);
+                    AddQuestionTaken(user, question, answeredCorrectly, xpGained, bonus, timer, guessAlternative);
                 }
-                    
+                
+                // Check if all the questions of the quiz has been answered
                 UpdateQuizTaken(user, quizId, questionId);
             }
             
@@ -112,6 +118,7 @@ namespace Qwiz.Controllers.Api
         
         private async void AddExperience(ApplicationUser user, int amount)
         {
+            user.Score += amount;
             user.Xp += amount;
             
             if (user.XpNeeded <= user.Xp) {
@@ -123,12 +130,41 @@ namespace Qwiz.Controllers.Api
             await _um.UpdateAsync(user);
         }
         
-        private async void AddQuestionTaken(ApplicationUser user, Question question, bool answeredCorrectly, int xpGained, int bonus, TimeSpan timer, string answer, string alternative)
+        private async void AddQuestionTaken(ApplicationUser user, Question question, bool answeredCorrectly, int xpGained, int bonus, TimeSpan timer, char alternative)
         {
+            var answer = GetAnswerFromAlternative(alternative, question);
+            if (answer == null) return;
+            
             var questionTaken = new QuestionTaken(question, answeredCorrectly, xpGained, bonus, timer, answer, alternative);
             await _db.QuestionsTaken.AddAsync(questionTaken);
             user.QuestionsTaken.Add(questionTaken);
             await _um.UpdateAsync(user);
+        }
+
+        private string GetAnswerFromAlternative(char? alternative, Question question)
+        {
+            string[] arr = null;
+            
+            if (question.QuestionType == "multiple_choice")
+                arr = JsonConvert.DeserializeObject<string[]>(question.Alternatives);
+            
+            switch (alternative)
+            {
+                case 'A':
+                    return arr?[0];
+                case 'B':
+                    return arr?[1];
+                case 'C':
+                    return arr?[2];
+                case 'D':
+                    return arr?[3];
+                case 'T':
+                    return "True";
+                case 'F':
+                    return "False";
+                
+                default: return null;
+            }
         }
     }
 }

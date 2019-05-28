@@ -9,7 +9,7 @@ using Qwiz.Models;
 
 namespace Qwiz.Controllers
 {
-    [Route("Group")]
+    [Route("group")]
     public class GroupController : Controller
     {
         private readonly ApplicationDbContext _db;

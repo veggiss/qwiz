@@ -1,22 +1,25 @@
 @model Quiz
 
-<div class="w-100 pagination-centered">
-    <div id="app" class="jumbotron p-2">
+<div class="w-100">
+    <div id="app">
         <div id="questionContent">
-            <div v-if="state === 'intro'">
-                <intro
-                    v-bind:questions-length="quiz.questions.length"
-                    v-bind:category="quiz.category"
-                    v-bind:topic="quiz.topic"
-                    v-bind:description="quiz.description"
-                    v-bind:image-path="quiz.imagePath"
-                    v-bind:difficulty="quiz.difficulty"
-                    v-on:nextstate="onNextState">
-                </intro>
+            <div class="w-100 d-flex justify-content-center">
+                <div v-if="state === 'intro'" style="max-width: 650px;">
+                    <intro class="bg-dark p-3"
+                        v-bind:id="quiz.id"
+                        v-bind:questions-length="quiz.questions.length"
+                        v-bind:category="quiz.category"
+                        v-bind:topic="quiz.topic"
+                        v-bind:description="quiz.description"
+                        v-bind:image-path="quiz.imagePath"
+                        v-bind:difficulty="quiz.difficulty"
+                        v-on:nextstate="onNextState">
+                    </intro>
+                </div>
             </div>
 
             <div v-if="state === 'question'">
-                <question
+                <question class="bg-dark p-3"
                     v-bind:type="question.questionType"
                     v-bind:text="question.questionText"
                     v-bind:last-question="lastQuestion"

@@ -18,10 +18,8 @@ $(document).ready(function() {
             if (global.debug) util.logResponse(response);
             
             if(response.status === 200)
-                window.location.href = "/Group/" + response.data;
+                window.location.href = "/group/" + response.data;
             
-        }).catch(function(e) {
-            util.logResponse(e);
-        });
+        }).catch(e => util.logResponse(e.response));
     }
 });

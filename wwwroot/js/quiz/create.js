@@ -1,6 +1,6 @@
 $(document).ready(function() {
     new Vue({
-        el: '#quizField',
+        el: '#quizForm',
         data: {
             isEdit: model !== null,
             question: {
@@ -18,7 +18,24 @@ $(document).ready(function() {
             $("#btnAddQuestion").click(() => this.addQuestion());
             $("#btnCreateQuiz").click(() => this.submitQuiz());
             $("#quizImg").change(e => this.changeQuizImg(e));
+            $("#btnDeleteQuiz").click(() => this.deleteQuiz());
             $(".alert .close").click(() => $(".alert").hide());
+            
+            if (this.isEdit) {
+                $('#quizCategory option').filter(function() {
+                    return $(this).text() === model.category;
+                }).prop('selected', true);
+                $("#quizTitle").val(model.topic);
+                $("#quizDifficulty").val(model.difficulty);
+                $("#quizImgPrev").attr('src', model.imagePath);
+                $("#quizDescription").val(model.description);
+                
+                model.questions.forEach((e, i) => {
+                    delete e.id;
+                    if (e.questionType === "multiple_choice") e.alternatives = JSON.parse(e.alternatives);
+                    this.$set(this.questions, i, e);
+                });
+            }
         },
         methods: {
             onCollapse: function(e) {
@@ -41,16 +58,13 @@ $(document).ready(function() {
 
                     if (this.isEdit) {
                         quiz.id = model.id;
-                        quiz.ownerId = model.ownerId;
                         api = '/api/quiz/update';
                     }
                     
                     axios.post(api, JSON.stringify(quiz), global.header).then(function(response) {
                         if (global.debug) util.logResponse(response);
-                        if (response.status === 200) window.location.href = '/Profile';
-                    }).catch(function(e) {
-                        if (global.debug) util.logResponse(e);
-                    });
+                        if (response.status === 200) window.location.href = '/user';
+                    }).catch(e => util.logResponse(e.response));
                 } else {
                     $(".alert").show().delay(2000).fadeOut();
                 }
@@ -78,12 +92,9 @@ $(document).ready(function() {
                         question.correctAlternative = e.target.value;
                     break;
                     case 'image':
-                        this.uploadImage(e.target.files[0])
+                        util.uploadImage(e.target.files[0])
                             .then(path => question.imagePath = path)
-                            .catch(e => {
-                                if (e.response.status === 400)
-                                    util.openModal(e.response.data);
-                            });
+                            .catch(e => util.logResponse(e.response));
                     break;
                     case 'alternative':
                         let altIndex = parseInt($(e.target).attr("index"));
@@ -94,61 +105,49 @@ $(document).ready(function() {
                 this.$set(this.questions, i, question);
             },
             changeQuizImg: function(e) {
-                this.uploadImage(e.target.files[0])
+                util.uploadImage(e.target.files[0])
                     .then(path => $("#quizImgPrev").attr("src", path))
-                    .catch(e => {
-                        util.logResponse(e);
-                    });
-            },
-            uploadImage: function(file) {
-                let formData = new FormData();
-                formData.set('image', file);
-                
-                return new Promise(function(resolve, reject) {
-                    axios.post('/api/user/uploadImage', formData, {
-                        headers: {
-                            'Content-Type': 'multipart/form-data'
-                        }
-                    }).then(function(response) {
-                        if (global.debug) util.logResponse(response);
-                        resolve(response.data);
-                    }).catch(function(err) {
-                        reject(err);
-                    });
-                });
+                    .catch(e => util.logResponse(e.response));
             },
             questionsToJson: function() {
                 let questions = [];
-                //TODO: This should be done on the server instead
                 this.questions.forEach(e => {
                     let q = $.extend(true, {}, e);
+
                     switch (q.correctAlternative) {
                         case 'A':
                             q.correctAnswer = q.alternatives[0];
-                        break;
+                            break;
                         case 'B':
                             q.correctAnswer = q.alternatives[1];
-                        break;
+                            break;
                         case 'C':
                             q.correctAnswer = q.alternatives[2];
-                        break;
+                            break;
                         case 'D':
                             q.correctAnswer = q.alternatives[3];
-                        break;
+                            break;
                         case 'T':
                             q.correctAnswer = 'True';
-                        break;
+                            break;
                         case 'F':
                             q.correctAnswer = 'False';
-                        break;
+                            break;
                     }
-
-                    q.alternatives = q.questionType === "multiple_choice" ? JSON.stringify(q.alternatives) : null;
                     
+                    q.alternatives = q.questionType === "multiple_choice" ? JSON.stringify(q.alternatives) : null;
                     questions.push(q);
                 });
                 
                 return questions;
+            },
+            deleteQuiz: function() {
+                if (this.isEdit && global.isAuthenticated) {
+                    axios.delete('/api/quiz/delete/' + model.id, global.header).then(function(response) {
+                        if (global.debug) util.logResponse(response);
+                        if (response.status === 200) window.location.href = "/quiz";
+                    }).catch(e => util.logResponse(e.response));
+                }
             }
         }
     });

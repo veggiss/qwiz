@@ -8,6 +8,7 @@
     <hr class="my-4">
     <p class="lead">You got @Model.CorrectAnswers of @Model.Quiz.Questions.Count questions right!</p>
     <p class="lead">@Model.Score XP gained!</p>
+    <a href="/leaderboard/@Model.Quiz.Id">Leaderboards</a>
     <p class="lead small text-muted">Quiz taken @Model.DateTaken</p>
     
     <table class="table table-bordered overflow-hidden text-wrap">

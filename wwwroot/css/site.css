@@ -120,12 +120,16 @@ body {
   border-radius: 200px;
 }
 
+.dropdown-menu {
+  min-width: 0px !important;
+}
+
 .dropdown:hover>.dropdown-menu {
+  top: 30px;
   display: block;
 }
 
 .dropdown>.dropdown-toggle:active {
-  /*Without this, clicking will make it sticky*/
   pointer-events: none;
 }
 

@@ -28,14 +28,14 @@ $(document).ready(() => {
                     this.myQuizzesCallback(1);
                     this.myQuizzesClicked = true;
                 }
-            })
+            });
 
             $("#myGroups-tab").click(() => {
                 if (!this.myGroupsClicked) {
                     this.myGroupsCallback(1);
                     this.myGroupsClicked = true;
                 }
-            })
+            });
         },
         methods: {
             historyListCallback: function(page) {
@@ -50,7 +50,7 @@ $(document).ready(() => {
                     self.historyList.entries = response.data.entries;
                     self.historyList.pages = response.data.pages;
                     self.historyList.showSummary = response.data.showSummary;
-                }).catch(e => util.logResponse(e));;
+                }).catch(e => util.logResponse(e.response));
             },
             myQuizzesCallback: function(page) {
                 let self = this;
@@ -64,7 +64,7 @@ $(document).ready(() => {
                     self.myQuizzes.entries = response.data.entries;
                     self.myQuizzes.pages = response.data.pages;
                     self.myQuizzes.canEdit = response.data.canEdit;
-                }).catch(e => util.logResponse(e));
+                }).catch(e => util.logResponse(e.response));
             },
             myGroupsCallback: function(page) {
                 let self = this;
@@ -77,7 +77,7 @@ $(document).ready(() => {
                     if (global.debug) util.logResponse(response);
                     self.myGroups.entries = response.data.entries;
                     self.myGroups.pages = response.data.pages;
-                }).catch(e => util.logResponse(e));
+                }).catch(e => util.logResponse(e.response));
             }
         }
     });

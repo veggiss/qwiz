@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Qwiz.Models;
@@ -6,6 +7,9 @@ namespace Qwiz.Controllers
 {
     public static class QuizUtil
     {
+        public static DateTime OfTheDayTimer = DateTime.MinValue;
+        public static List<Quiz> OfTheDayList = new List<Quiz>();
+        
         public static int XpGainedFromQuestion(string type)
         {
             int value = 0;

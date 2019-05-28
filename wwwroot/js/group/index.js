@@ -30,9 +30,7 @@ $(document).ready(() => {
                     self.groups.entries = response.data.entries;
                     self.groups.pages = response.data.pages;
                     self.groups.currentPage = page;
-                }).catch(function(e) {
-                    util.logResponse(e);
-                });
+                }).catch(e => util.logResponse(e.response));
             },
             searchCallback: function(e) {
                 if (e.keyCode === 13) {

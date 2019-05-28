@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -10,10 +11,12 @@ using Qwiz.Models;
 
 namespace Qwiz.Controllers
 {
+    [Route("quiz")]
     public class QuizController : Controller
     {
         private readonly ApplicationDbContext _db;
         private readonly UserManager<ApplicationUser> _um;
+        private readonly Random _ran = new Random();
         
         public QuizController(ApplicationDbContext db, UserManager<ApplicationUser> um)
         {
@@ -23,13 +26,13 @@ namespace Qwiz.Controllers
         
         public async Task<IActionResult> Index()
         {
-            var quizzes = _db.Quizzes
-                .Include(q => q.Owner)
-                .Skip(0).Take(3);
+            if (QuizUtil.OfTheDayTimer < DateTime.Now)
+                QuizUtil.OfTheDayList = await UpdateOfTheDay();
             
-            return View(await quizzes.ToListAsync());
+            return View(QuizUtil.OfTheDayList);
         }
 
+        [HttpGet("{id}")]
         public async Task<IActionResult> Play(int? id)
         {
             if (id == null) return NotFound();
@@ -48,12 +51,14 @@ namespace Qwiz.Controllers
             return View(quiz);
         }
         
+        [HttpGet("create")]
         [Authorize]
         public IActionResult Create()
         {
             return View();
         }
 
+        [HttpGet("edit/{id}")]
         [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -70,6 +75,7 @@ namespace Qwiz.Controllers
             return NotFound();
         }
 
+        [HttpGet("summary/{id}")]
         [Authorize]
         public async Task<IActionResult> Summary(int? id)
         {
@@ -91,6 +97,24 @@ namespace Qwiz.Controllers
             }
             
             return BadRequest();
+        }
+        
+        private async Task<List<Quiz>> UpdateOfTheDay()
+        {
+            var newQuizList = new List<Quiz>();
+            var quizList = QuizUtil.OfTheDayList.ToList();
+            QuizUtil.OfTheDayTimer = DateTime.Now.AddSeconds(10);
+
+            for (var i = 0; i < 3; i++)
+            {
+                var quiz = await _db.Quizzes.Where(q => quizList.All(q2 => q2.Id != q.Id)).FirstOrDefaultAsync();
+                if (quiz == null) break;
+                
+                quizList.Add(quiz);
+                newQuizList.Add(quiz);
+            }
+            
+            return newQuizList;
         }
     }
 }

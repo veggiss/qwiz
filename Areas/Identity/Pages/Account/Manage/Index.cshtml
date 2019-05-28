@@ -50,14 +50,12 @@
                 <div style="width: 35%;">
                     <div class="form-group">
                         <h4>My Profile Avatar</h4> 
-                        <input type="file"/>
+                        <input id="avatarFile" type="file"/>
+                        <img id="avatarPreview" class="avatar mx-auto d-block m-2" alt="" src="@Model.ImagePath">
                     </div>
                 </div>
             </div>
-        
         </div>
-
-
     </div>
     
        
@@ -67,4 +65,16 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+    $("#avatarFile").change(e => {
+        util.uploadImage(e.target.files[0])
+            .then(function(path) {
+                if (global.debug) util.logResponse(path);
+                $("#avatarPreview").attr('src', path);
+                axios.put(util.apiUrl('/api/user/updateAvatar', {
+                    path: path
+                })).catch(e => util.logResponse(e.response));
+            }).catch(e => util.logResponse(e.response));
+    });
+    </script>
 }

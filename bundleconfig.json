@@ -54,5 +54,45 @@
       "enabled": true,
       "renameLocals": true
     }
+  },
+  {
+    "outputFileName": "wwwroot/js/group/create.min.js",
+    "inputFiles": [
+      "wwwroot/js/group/create.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    }
+  },
+  {
+    "outputFileName": "wwwroot/js/group/group.min.js",
+    "inputFiles": [
+      "wwwroot/js/group/group.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    }
+  },
+  {
+    "outputFileName": "wwwroot/js/group/index.min.js",
+    "inputFiles": [
+      "wwwroot/js/group/index.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    }
+  },
+  {
+    "outputFileName": "wwwroot/js/leaderboard/index.min.js",
+    "inputFiles": [
+      "wwwroot/js/leaderboard/index.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    }
   }
 ]

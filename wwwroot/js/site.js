@@ -18,12 +18,9 @@ let util = {
         $("#modalGlobal").modal()
     },
     logResponse: function(response) {
-        console.log(response);
         if (response.status) {
             let s = response.status.toString()[0];
             let data = response.data ? response.data : 'no data';
-            
-            
             
             if (s === '5') {
                 util.openModal("Server got an exception error, That ain't good..");
@@ -40,19 +37,34 @@ let util = {
         }
     },
     wakeUp: function() {
-        if (global.isAuthenticated) {
-            axios.put('/api/user/wakeUp');
-            setInterval(() => {
-                let lastActivity = window.localStorage.getItem("lastActivity");
-                if (global.isAuthenticated && (lastActivity == null || parseInt(lastActivity) < Date.now())) {
-                    window.localStorage.setItem("lastActivity", (Date.now() + global.wakeUpTimer).toString());
-                    axios.put('/api/user/wakeUp');
-                }
-            }, 1000 * 60);
-        }
+        setInterval(() => {
+            let lastActivity = window.localStorage.getItem("lastActivity");
+            if (global.isAuthenticated && (lastActivity == null || parseInt(lastActivity) < Date.now())) {
+                window.localStorage.setItem("lastActivity", (Date.now() + global.wakeUpTimer).toString());
+                axios.put('/api/user/wakeUp');
+                if (global.debug) console.log("Sending request to '/api/user/wakeUp'");
+            }
+        }, 1000);
     },
     getToken: function() {
         return $('input[name="__RequestVerificationToken"]').val()
+    },
+    uploadImage: function(file) {
+        let formData = new FormData();
+        formData.set('image', file);
+
+        return new Promise(function(resolve, reject) {
+            axios.post('/api/user/uploadImage', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            }).then(function(response) {
+                if (global.debug) util.logResponse(response);
+                resolve(response.data);
+            }).catch(function(err) {
+                reject(err);
+            });
+        });
     }
 };
 

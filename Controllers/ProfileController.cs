@@ -15,6 +15,7 @@ using Qwiz.Areas.Identity.Pages.Account;
 namespace Qwiz.Controllers
 {
     
+    [Route("user")]
     public class ProfileController : Controller
     {
     
@@ -27,6 +28,8 @@ namespace Qwiz.Controllers
             _um = um;
         }
         
+        [HttpGet]
+        [HttpGet("{username}")]
         public async Task<IActionResult> Index(string username)
         {
             if (username == null) username = _um.GetUserName(User);

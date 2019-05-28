@@ -16,11 +16,13 @@ namespace Qwiz.Controllers.Api
     {
         private readonly ApplicationDbContext _db;
         private readonly UserManager<ApplicationUser> _um;
+        private readonly IHttpContextAccessor _accessor;
         
-        public ApiUserController(ApplicationDbContext db, UserManager<ApplicationUser> um)
+        public ApiUserController(ApplicationDbContext db, UserManager<ApplicationUser> um, IHttpContextAccessor accessor)
         {
             _db = db;
             _um = um;
+            _accessor = accessor;
         }
         
         // TODO: Change to a websocket solution?
@@ -29,15 +31,28 @@ namespace Qwiz.Controllers.Api
         public async void SetLastActivity()
         {
             var user = await _um.GetUserAsync(User);
+            
+            Console.WriteLine("----------------------0");
 
             if (user != null)
             {
-                if (user.LastActivity.AddMinutes(4) < DateTime.Now)
+                Console.WriteLine("----------------------1");
+                if (user.LastActivity < DateTime.Now)
                 {
-                    user.LastActivity = DateTime.Now;
+                    Console.WriteLine("----------------------2");
+                    user.LastActivity = DateTime.Now.AddMinutes(5);
                     await _um.UpdateAsync(user);
                 }
             }
+        }
+    
+        [HttpPut("updateAvatar")]
+        [Authorize]
+        public async void UpdateAvatar(string path)
+        {
+            var user = await _um.GetUserAsync(User);
+            user.ImagePath = path;
+            await _um.UpdateAsync(user);
         }
         
         [HttpPost("uploadImage")]
@@ -50,6 +65,15 @@ namespace Qwiz.Controllers.Api
             
             var filename = Guid.NewGuid() + Path.GetExtension(image.FileName);
             var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", filename);
+
+            var username = (await _um.GetUserAsync(User)).UserName;
+            var ip = _accessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+
+            if (username == null) return BadRequest("You seem to not be logged in!");
+            if (ip == null) return BadRequest("Cannot upload that image!");
+            
+            await _db.Images.AddAsync(new Image(filename, ip, username));
+            await _db.SaveChangesAsync();
 
             using (var stream = new FileStream(path, FileMode.Create))
                 await image.CopyToAsync(stream);

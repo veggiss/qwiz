@@ -17,6 +17,7 @@ namespace Qwiz.Models
             OwnerUsername = owner.UserName;
             
             Members.Add(new GroupMember(0, owner, this));
+            if (requiresDomain) RequiredDomain = owner.Email.Split("@")[1];
         }
         
         public int Id { get; set; }

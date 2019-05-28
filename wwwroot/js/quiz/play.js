@@ -34,7 +34,6 @@ $(document).ready(() => {
                     axios.put(util.apiUrl('/api/question/answer', {
                         quizId: this.quiz.id,
                         questionId: this.question.id,
-                        guess: e.target.innerHTML,
                         guessAlternative: e.target.name
                     })).then(function(response) {
                         if (global.debug) util.logResponse(response);
@@ -55,7 +54,7 @@ $(document).ready(() => {
                             $(bars[self.page]).addClass('bg-success');
                             self.addXpPoints(xp + bonus);
                         }
-                    }).catch(e => util.logResponse(e));
+                    }).catch(e => util.logResponse(e.response));
                 }
             },
             updateQuestion: function() {
@@ -69,7 +68,7 @@ $(document).ready(() => {
                 if (state === "question") {
                     this.startTimer();
                 } else if (state === "summary") {
-                    window.location.href = '/Quiz/Summary/' + this.quiz.id;
+                    window.location.href = '/quiz/summary/' + this.quiz.id;
                 }
             },
             startTimer: function() {

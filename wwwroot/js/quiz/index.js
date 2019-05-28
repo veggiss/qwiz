@@ -5,6 +5,7 @@ $(document).ready(function () {
     let app = new Vue({
         el: '#tabContent',
         data: {
+            ofTheDay: model,
             searchEntries: {
                 entries: [],
                 pages: 0
@@ -30,9 +31,7 @@ $(document).ready(function () {
                     if (global.debug) util.logResponse(response);
                     self.searchEntries.entries = response.data.entries;
                     self.searchEntries.pages = response.data.pages;
-                }).catch(function(e) {
-                    util.logResponse(e);
-                });
+                }).catch(e => util.logResponse(e.response));
             },
             searchCallback: function(e) {
                 if (e.keyCode === 13) {

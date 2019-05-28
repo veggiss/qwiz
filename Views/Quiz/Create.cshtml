@@ -61,7 +61,7 @@
         </div>
     </div>
     
-    <div id="quizField">
+    <div>
         <question-form
             v-for="(question, index) in questions"
             v-bind:key="index"
@@ -76,12 +76,18 @@
     <hr>
     
     <button id="btnAddQuestion" type="button" class="btn btn-primary" style="margin: 5px; width: 98%">+ Add question</button>
-    <button id="btnCreateQuiz" type="button" class="btn btn-success" style="margin: 5px; width: 98%">Create Quiz</button>
     
-    <div id="deleteDiv" style="display: none">
-        <hr>
-        <button id="btnDeleteQuiz" type="button" class="btn btn-danger" style="margin: 5px; width: 98%">Delete Quiz</button>
-    </div>
+    @if (Model != null) {
+        <button id="btnCreateQuiz" type="button" class="btn btn-success" style="margin: 5px; width: 98%">Update Quiz</button>
+        <div id="deleteDiv">
+            <hr>
+            <button id="btnDeleteQuiz" type="button" class="btn btn-danger" style="margin: 5px; width: 98%">Delete Quiz</button>
+        </div>
+    }
+    else
+    {
+        <button id="btnCreateQuiz" type="button" class="btn btn-success" style="margin: 5px; width: 98%">Create Quiz</button>
+    }
     
     <div class="alert alert-danger" style="display: none">
         <button type="button" class="close">&times;</button>

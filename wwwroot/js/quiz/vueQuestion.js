@@ -54,10 +54,10 @@ Vue.component('question', {
 });
 
 Vue.component('intro', {
-    props: ['topic', 'description', 'category', 'imagePath', 'difficulty', 'questionsLength'],
+    props: ['id', 'topic', 'description', 'category', 'imagePath', 'difficulty', 'questionsLength'],
     template:
 `
-<div class="text-center">    
+<div class="text-center">
     <div v-if="imagePath !== null">
         <img style="display:block; margin:auto; max-width: 400px;" :src="imagePath"/>
     </div>
@@ -80,7 +80,7 @@ Vue.component('intro', {
     
     <label class="text-muted">Questions</label>
     <p class="lead">{{ questionsLength }}</p>
-    
+    <a :href="'/leaderboard/' + id">Leaderboards</a>
     <hr class="my-4">
     
     <p class="lead">

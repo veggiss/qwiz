@@ -73,7 +73,7 @@ namespace Qwiz.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            returnUrl = returnUrl ?? Url.Content("~/Profile");
+            returnUrl = returnUrl ?? Url.Content("~/user/" + User.Identity.Name);
 
             if (ModelState.IsValid)
             {
@@ -84,7 +84,7 @@ namespace Qwiz.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
-                    return Redirect("/Profile");
+                    return Redirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
                 {

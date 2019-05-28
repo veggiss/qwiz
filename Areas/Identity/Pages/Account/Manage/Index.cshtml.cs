@@ -31,6 +31,8 @@ namespace Qwiz.Areas.Identity.Pages.Account.Manage
         public string Username { get; set; }
 
         public bool IsEmailConfirmed { get; set; }
+        
+        public string ImagePath { get; set; }
 
         [TempData]
         public string StatusMessage { get; set; }
@@ -70,6 +72,8 @@ namespace Qwiz.Areas.Identity.Pages.Account.Manage
             };
 
             IsEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
+            ImagePath = user.ImagePath;
+            
 
             return Page();
         }

@@ -15,8 +15,11 @@ namespace Qwiz.Models
         [StringLength(64, ErrorMessage = "Must be at least 2 and at max 64 characters long.", MinimumLength = 2)]
         [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Only standard letters allowed.")]
         public string LastName { get; set; }
+
+        public string ImagePath { get; set; } = "/images/avatar.png";
         public int Xp { get; set; }
         public int Level { get; set; } = 1;
+        public int Score { get; set; }
         public int QuizzesTakenCount { get; set; }
         public int XpNeeded { get; set; } = 1500;
         public DateTime RegistrationDate { get; set; } = DateTime.Now;

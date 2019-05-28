@@ -9,6 +9,7 @@ using Remotion.Linq.Parsing.Structure.IntermediateModel;
 
 namespace Qwiz.Controllers
 {
+    [Route("leaderboard")]
     public class LeaderboardController : Controller
     {
         private readonly ApplicationDbContext _db;
@@ -20,14 +21,21 @@ namespace Qwiz.Controllers
             _um = um;
         }
         
-        public async Task<IActionResult> Index()
+        [HttpGet]
+        public IActionResult Index()
         {
-            var topPlayers = _um.Users
-                .Take(100)
-                .OrderByDescending(u => u.Xp);
-                
-                
-            return View(await topPlayers.ToListAsync());
+            return View();
+        }
+        
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Quiz(int id)
+        {
+            var quiz = await _db.Quizzes.Where(q => q.Id == id).FirstOrDefaultAsync();
+
+            if (quiz == null)
+                return NotFound();
+            
+            return View(quiz);
         }
     }
 }
