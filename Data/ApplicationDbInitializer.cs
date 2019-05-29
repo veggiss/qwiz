@@ -22,15 +22,15 @@ namespace Qwiz.Data
         
         public static async Task Initialize(ApplicationDbContext db, UserManager<ApplicationUser> um, RoleManager<IdentityRole> rm)
         {
-            db.Database.EnsureDeleted();
-            db.Database.EnsureCreated();
+            //db.Database.EnsureDeleted();
+            //db.Database.EnsureCreated();
 
             _db = db;
             _um = um;
             
-            var adminUser = new ApplicationUser {FirstName = "Admin", LastName = "Boss", UserName = "user123", Email = "user@uia.no"};
-            await um.CreateAsync(adminUser, "Password1.");
-            await db.SaveChangesAsync();
+            //var adminUser = new ApplicationUser {FirstName = "Admin", LastName = "Boss", UserName = "user123", Email = "user@uia.no"};
+            //await um.CreateAsync(adminUser, "Password1.");
+            //await db.SaveChangesAsync();
 
             // Used for debugging and testing
             //await AddRandomUsers();
