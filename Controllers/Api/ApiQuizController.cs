@@ -174,11 +174,14 @@ namespace Qwiz.Controllers.Api
             if (await _db.QuizzesTaken.AnyAsync(q => q.Quiz == quiz))
                 return BadRequest("You cannot edit this quiz because someone has already taken it. You can however delete it, and create a new.");
             
-            // TODO: Questions from request gets added and replaced, even unedited once. Fix Plz
             try
             {
+                if (quizForm.Category != quiz.Category) {
+                    quiz.Category = QuizUtil.CategoryFromIndex(int.TryParse(quiz.Category, out var i) ? i : (int?) null);
+                    if (quiz.Category == null) return BadRequest("Invalid category!");
+                }
+                
                 quiz.Topic        = quizForm.Topic;
-                quiz.Category     = quizForm.Category;
                 quiz.Description  = quizForm.Description;
                 quiz.ImagePath    = quizForm.ImagePath;
                 
