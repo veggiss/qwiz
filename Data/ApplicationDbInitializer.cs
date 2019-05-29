@@ -33,9 +33,9 @@ namespace Qwiz.Data
             await db.SaveChangesAsync();
 
             // Used for debugging and testing
-            //await AddRandomUsers();
-            //await AddRandomQuizzes();
-            //await AddRandomGroups();
+            await AddRandomUsers(1000);
+            await AddRandomQuizzes(500);
+            await AddRandomGroups(300);
         }
 
         private static async Task<object> GetObjectFromApi(string host, string path)
